@@ -58,7 +58,7 @@ Release artifacts must be built by the repository's automated workflow from comm
 
 CoreOps is preparing to apply to SignPath Foundation. Planned provider statement (not yet active): **Free code signing provided by SignPath.io, certificate by SignPath Foundation.** Until acceptance and integration are complete, release artifacts are unsigned and are labeled accordingly.
 
-- Committers and reviewers: [CoreOps contributors](https://github.com/xotan135/networkadmin/graphs/contributors)
+- Committers and reviewers: [CoreOps contributors](https://github.com/xotan135/CoreOps/graphs/contributors)
 - Approvers: [repository owner](https://github.com/xotan135)
 
 ## License
