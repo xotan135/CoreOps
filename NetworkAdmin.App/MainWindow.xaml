@@ -128,7 +128,7 @@
                                VerticalAlignment="Center"/>
                     <Border Background="#292929" BorderBrush="#454545" BorderThickness="1"
                             CornerRadius="8" Padding="7,2" Margin="11,0,0,0">
-                        <TextBlock x:Name="AppVersionTextBlock" Text="v0.4.0" FontFamily="Consolas"
+                        <TextBlock x:Name="AppVersionTextBlock" Text="v0.5.0" FontFamily="Consolas"
                                    FontSize="9" Foreground="#BEBEBE"/>
                     </Border>
                 </StackPanel>
@@ -155,17 +155,18 @@
                     <TextBlock Text="Computer names" FontWeight="SemiBold" Foreground="#F1F1F1" Margin="0,0,0,6"/>
                     <TextBox x:Name="ComputerNamesTextBox" Height="112" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"
                              ToolTip="Enter DNS or NetBIOS names separated by commas, spaces, or new lines"/>
-                    <TextBlock Text="Example: ftwtx100, ftwtx101" Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,5,0,0"/>
+                    <TextBlock Text="Example: workstation-01, server-02" Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,5,0,0"/>
                 </StackPanel>
                 <StackPanel Grid.Column="2">
                     <TextBlock Text="Protected computers" FontWeight="SemiBold" Foreground="#F1F1F1" Margin="0,0,0,6"/>
-                    <TextBox x:Name="ProtectedNamesTextBox" Height="112" AcceptsReturn="True" Text="ftwtx126&#x0a;ftwtx175"/>
+                    <TextBox x:Name="ProtectedNamesTextBox" Height="112" AcceptsReturn="True"
+                             ToolTip="Stored only in your local CoreOps settings"/>
                     <TextBlock Text="Restart is blocked for these computers." Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,5,0,0"/>
                 </StackPanel>
                 <StackPanel Grid.Row="2" Grid.ColumnSpan="3">
                     <TextBlock Text="Inventory workbook" FontWeight="SemiBold" Foreground="#F1F1F1" Margin="0,0,0,6"/>
-                    <TextBox x:Name="InventoryPathTextBox" Text="G:\IT\Confidential\Inventory.xlsm"
-                             ToolTip="Existing macro-enabled inventory workbook"/>
+                    <TextBox x:Name="InventoryPathTextBox"
+                             ToolTip="Path to an existing macro-enabled inventory workbook; stored only in local settings"/>
                 </StackPanel>
             </Grid>
         </Border>

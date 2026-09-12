@@ -2,6 +2,22 @@
 
 CoreOps uses semantic versioning while it is under active development.
 
+## 0.5.0 — 2026-09-12
+
+### Added
+
+- MIT license and public contribution, privacy, and security policies
+- Code-signing policy and public release documentation
+- Automated GitHub Actions build for pull requests, main, and version tags
+- Pinned .NET SDK and explicit least-privilege application manifest
+- Local persistence for the inventory workbook path and protected-computer list
+
+### Changed
+
+- Replaced organization-specific example computers and workbook path with neutral defaults
+- Added consistent publisher, repository, copyright, license, and version metadata
+- Excluded generated installer releases from source control
+
 ## 0.4.0 — 2026-09-11
 
 First tracked pre-release.

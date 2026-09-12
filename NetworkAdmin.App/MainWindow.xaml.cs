@@ -13,6 +13,7 @@ public partial class MainWindow : Window
     private readonly RemoteManagementService _remote = new();
     private readonly ExcelInventoryService _excelInventory = new();
     private readonly AuditLogService _audit = new();
+    private readonly SettingsService _settings = new();
     private CancellationTokenSource? _cancellation;
 
     public MainWindow()
@@ -20,6 +21,10 @@ public partial class MainWindow : Window
         InitializeComponent();
         var version = Assembly.GetEntryAssembly()?.GetName().Version;
         AppVersionTextBlock.Text = version is null ? "development" : $"v{version.Major}.{version.Minor}.{version.Build}";
+        var settings = _settings.Load();
+        InventoryPathTextBox.Text = settings.InventoryWorkbookPath;
+        ProtectedNamesTextBox.Text = string.Join(Environment.NewLine, settings.ProtectedComputers);
+        Closing += (_, _) => SaveSettings();
         ResultsGrid.ItemsSource = _results;
         AppendLog("Application ready. Commands run as the current Windows user.");
     }
@@ -29,6 +34,7 @@ public partial class MainWindow : Window
 
     private async void InventoryButton_Click(object sender, RoutedEventArgs e)
     {
+        SaveSettings();
         await RunAsync("Inventory collection", _remote.GetInventoryAsync);
         var collected = _results.Where(result => result.State.Equals("Online", StringComparison.OrdinalIgnoreCase)).ToList();
         if (collected.Count == 0) return;
@@ -57,6 +63,7 @@ public partial class MainWindow : Window
 
     private async void RestartButton_Click(object sender, RoutedEventArgs e)
     {
+        SaveSettings();
         var targets = ParseNames(ComputerNamesTextBox.Text);
         if (targets.Count == 0) { ShowTargetError(); return; }
 
@@ -134,4 +141,10 @@ public partial class MainWindow : Window
 
     private static void ShowTargetError() => MessageBox.Show("Enter at least one valid computer name.", "Computer names required",
         MessageBoxButton.OK, MessageBoxImage.Information);
+
+    private void SaveSettings() => _settings.Save(new AppSettings
+    {
+        InventoryWorkbookPath = InventoryPathTextBox.Text.Trim(),
+        ProtectedComputers = ParseNames(ProtectedNamesTextBox.Text)
+    });
 }
