@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Network Admin (WPF)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build Network Admin",
+      "program": "${workspaceFolder}/NetworkAdmin.App/bin/Debug/net10.0-windows/CoreOps.exe",
+      "cwd": "${workspaceFolder}/NetworkAdmin.App",
+      "stopAtEntry": false
+    }
+  ]
+}

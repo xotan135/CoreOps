@@ -1,0 +1,216 @@
+<Window x:Class="NetworkAdmin.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="CoreOps" Icon="/Assets/CoreOps.ico" Height="790" Width="1220" MinHeight="680" MinWidth="960"
+        WindowStartupLocation="CenterScreen" Background="#151515" Foreground="#F1F1F1">
+    <Window.Resources>
+        <SolidColorBrush x:Key="SurfaceBrush" Color="#202020"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="#3D3D3D"/>
+        <SolidColorBrush x:Key="MutedBrush" Color="#AAAAAA"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="#A7E7E3"/>
+        <Style TargetType="TextBlock"><Setter Property="Foreground" Value="#F1F1F1"/></Style>
+        <Style TargetType="Button">
+            <Setter Property="Padding" Value="17,10"/><Setter Property="Margin" Value="0,0,9,0"/>
+            <Setter Property="Cursor" Value="Hand"/><Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#F4F4F4"/><Setter Property="Background" Value="#333333"/>
+            <Setter Property="BorderBrush" Value="#606060"/><Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="Padding" Value="9"/><Setter Property="Foreground" Value="#F2F2F2"/>
+            <Setter Property="Background" Value="#181818"/><Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="CaretBrush" Value="#FFFFFF"/><Setter Property="SelectionBrush" Value="#555555"/>
+        </Style>
+        <Style TargetType="ComboBox">
+            <Setter Property="Foreground" Value="#FFFFFF"/><Setter Property="Background" Value="#2B2B2B"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/><Setter Property="Padding" Value="6"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <ToggleButton x:Name="DropDownToggle" Focusable="False"
+                                          IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                          Background="#303030" BorderBrush="#606060" BorderThickness="1">
+                                <Grid Margin="9,0,7,0">
+                                    <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="18"/></Grid.ColumnDefinitions>
+                                    <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Left"
+                                                      Content="{TemplateBinding SelectionBoxItem}"
+                                                      ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                                      TextElement.Foreground="#FFFFFF"/>
+                                    <Path Grid.Column="1" Data="M 0 0 L 4 4 L 8 0 Z" Fill="#D8D8D8"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Grid>
+                            </ToggleButton>
+                            <Popup x:Name="PART_Popup" IsOpen="{TemplateBinding IsDropDownOpen}"
+                                   Placement="Bottom" AllowsTransparency="True" Focusable="False">
+                                <Border Width="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
+                                        Background="#2B2B2B" BorderBrush="#606060" BorderThickness="1" Padding="1">
+                                    <ScrollViewer MaxHeight="220" CanContentScroll="True">
+                                        <ItemsPresenter/>
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="Foreground" Value="#FFFFFF"/><Setter Property="Background" Value="#2B2B2B"/>
+            <Setter Property="Padding" Value="8,5"/>
+            <Style.Triggers>
+                <Trigger Property="IsHighlighted" Value="True"><Setter Property="Background" Value="#505050"/></Trigger>
+                <Trigger Property="IsSelected" Value="True"><Setter Property="Background" Value="#454545"/></Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#303030"/><Setter Property="Foreground" Value="#F1F1F1"/>
+            <Setter Property="BorderBrush" Value="#484848"/><Setter Property="Padding" Value="9,8"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+        <Style TargetType="DataGridCell">
+            <Setter Property="Foreground" Value="#E8E8E8"/><Setter Property="BorderBrush" Value="#323232"/>
+            <Setter Property="Padding" Value="7,5"/>
+        </Style>
+        <Style TargetType="DataGridRow">
+            <Setter Property="Background" Value="#1C1C1C"/><Setter Property="Foreground" Value="#E8E8E8"/>
+            <Style.Triggers>
+                <Trigger Property="AlternationIndex" Value="1"><Setter Property="Background" Value="#242424"/></Trigger>
+                <Trigger Property="IsSelected" Value="True"><Setter Property="Background" Value="#494949"/></Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="104"/><RowDefinition Height="8"/><RowDefinition Height="Auto"/>
+            <RowDefinition Height="14"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid Height="104" HorizontalAlignment="Stretch" VerticalAlignment="Top">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="96"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Grid Grid.Column="0" Width="94" Height="94" HorizontalAlignment="Left" VerticalAlignment="Center">
+                <Ellipse x:Name="CoreGlow" Width="74" Height="74" Fill="#59DAD2" Opacity="0.10"
+                         RenderTransformOrigin="0.5,0.5" IsHitTestVisible="False">
+                    <Ellipse.RenderTransform><ScaleTransform ScaleX="0.92" ScaleY="0.92"/></Ellipse.RenderTransform>
+                    <Ellipse.Effect><BlurEffect Radius="25"/></Ellipse.Effect>
+                </Ellipse>
+                <Image x:Name="CoreLogo" Source="/Assets/network-admin-logo-v3.png" Width="90" Height="90"
+                       Stretch="Uniform" SnapsToDevicePixels="True" Opacity="0.92">
+                    <Image.Effect><DropShadowEffect Color="#62DED7" BlurRadius="12" ShadowDepth="0" Opacity="0.34"/></Image.Effect>
+                </Image>
+                <Grid.Triggers>
+                    <EventTrigger RoutedEvent="Loaded"><BeginStoryboard>
+                        <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+                            <DoubleAnimation Storyboard.TargetName="CoreGlow" Storyboard.TargetProperty="Opacity"
+                                             From="0.07" To="0.32" Duration="0:0:2.2"/>
+                            <DoubleAnimation Storyboard.TargetName="CoreGlow"
+                                             Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
+                                             From="0.92" To="1.10" Duration="0:0:2.2"/>
+                            <DoubleAnimation Storyboard.TargetName="CoreGlow"
+                                             Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
+                                             From="0.92" To="1.10" Duration="0:0:2.2"/>
+                            <DoubleAnimation Storyboard.TargetName="CoreLogo" Storyboard.TargetProperty="Opacity"
+                                             From="0.90" To="1.0" Duration="0:0:2.2"/>
+                        </Storyboard>
+                    </BeginStoryboard></EventTrigger>
+                </Grid.Triggers>
+            </Grid>
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="13,0,0,0">
+                <TextBlock FontFamily="Bahnschrift SemiCondensed" FontSize="35" FontWeight="SemiBold"
+                           LineHeight="37" TextOptions.TextFormattingMode="Display">
+                    <Run Text="CORE" Foreground="#F2F2F2"/><Run Text="OPS" Foreground="#78DDD7"/>
+                </TextBlock>
+                <StackPanel Orientation="Horizontal" Margin="2,-2,0,0">
+                    <TextBlock Text="N E T W O R K   A D M I N   C O N S O L E"
+                               FontFamily="Segoe UI Semibold" FontSize="9" Foreground="#8E8E8E"
+                               VerticalAlignment="Center"/>
+                    <Border Background="#292929" BorderBrush="#454545" BorderThickness="1"
+                            CornerRadius="8" Padding="7,2" Margin="11,0,0,0">
+                        <TextBlock x:Name="AppVersionTextBlock" Text="v0.4.0" FontFamily="Consolas"
+                                   FontSize="9" Foreground="#BEBEBE"/>
+                    </Border>
+                </StackPanel>
+            </StackPanel>
+            <Border Grid.Column="2" VerticalAlignment="Center" Background="#202020" BorderBrush="#3D3D3D"
+                    BorderThickness="1" CornerRadius="15" Padding="12,7" MaxWidth="390">
+                <StackPanel Orientation="Horizontal">
+                    <Ellipse Width="7" Height="7" Fill="#65D9B5" Margin="0,0,8,0" VerticalAlignment="Center">
+                        <Ellipse.Effect><DropShadowEffect Color="#65D9B5" BlurRadius="6" ShadowDepth="0"/></Ellipse.Effect>
+                    </Ellipse>
+                    <TextBlock x:Name="StatusTextBlock" Text="Ready" Foreground="#D2D2D2" FontSize="11"
+                               VerticalAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="340"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <Border Grid.Row="2" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="1" CornerRadius="12" Padding="20" Panel.ZIndex="2">
+            <Border.Effect><DropShadowEffect Color="#000000" BlurRadius="18" ShadowDepth="3" Opacity="0.45"/></Border.Effect>
+            <Grid>
+                <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="14"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                <Grid.ColumnDefinitions><ColumnDefinition Width="2*"/><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TextBlock Text="Computer names" FontWeight="SemiBold" Foreground="#F1F1F1" Margin="0,0,0,6"/>
+                    <TextBox x:Name="ComputerNamesTextBox" Height="112" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"
+                             ToolTip="Enter DNS or NetBIOS names separated by commas, spaces, or new lines"/>
+                    <TextBlock Text="Example: ftwtx100, ftwtx101" Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,5,0,0"/>
+                </StackPanel>
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="Protected computers" FontWeight="SemiBold" Foreground="#F1F1F1" Margin="0,0,0,6"/>
+                    <TextBox x:Name="ProtectedNamesTextBox" Height="112" AcceptsReturn="True" Text="ftwtx126&#x0a;ftwtx175"/>
+                    <TextBlock Text="Restart is blocked for these computers." Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,5,0,0"/>
+                </StackPanel>
+                <StackPanel Grid.Row="2" Grid.ColumnSpan="3">
+                    <TextBlock Text="Inventory workbook" FontWeight="SemiBold" Foreground="#F1F1F1" Margin="0,0,0,6"/>
+                    <TextBox x:Name="InventoryPathTextBox" Text="G:\IT\Confidential\Inventory.xlsm"
+                             ToolTip="Existing macro-enabled inventory workbook"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="4">
+            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="12"/><RowDefinition Height="*"/><RowDefinition Height="12"/><RowDefinition Height="120"/></Grid.RowDefinitions>
+            <DockPanel>
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                    <Button x:Name="CheckButton" Content="Check WinRM" Click="CheckButton_Click" Background="#383838" BorderBrush="#666666"/>
+                    <Button x:Name="InventoryButton" Content="Collect inventory" Click="InventoryButton_Click" Background="#3A3A3A" BorderBrush="#747474"/>
+                    <Button x:Name="RestartButton" Content="Restart…" Click="RestartButton_Click" Background="#403536" BorderBrush="#76595C"/>
+                    <Button x:Name="CancelButton" Content="Cancel" Click="CancelButton_Click" IsEnabled="False"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <TextBlock Text="Parallel jobs:" Foreground="#FFFFFF" VerticalAlignment="Center" Margin="0,0,7,0"/>
+                    <ComboBox x:Name="ParallelismComboBox" Width="58" SelectedIndex="1">
+                        <ComboBoxItem Content="1"/><ComboBoxItem Content="4"/><ComboBoxItem Content="8"/>
+                    </ComboBox>
+                </StackPanel>
+            </DockPanel>
+
+            <DataGrid x:Name="ResultsGrid" Grid.Row="2" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"
+                      Background="#191919" Foreground="#E8E8E8" BorderBrush="{StaticResource BorderBrush}"
+                      RowBackground="#1C1C1C" AlternatingRowBackground="#242424" AlternationCount="2"
+                      GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#323232" HeadersVisibility="Column">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Computer" Binding="{Binding ComputerName}" Width="150"/>
+                    <DataGridTextColumn Header="State" Binding="{Binding State}" Width="100"/>
+                    <DataGridTextColumn Header="Manufacturer" Binding="{Binding Manufacturer}" Width="140"/>
+                    <DataGridTextColumn Header="Model" Binding="{Binding Model}" Width="150"/>
+                    <DataGridTextColumn Header="Windows" Binding="{Binding Windows}" Width="190"/>
+                    <DataGridTextColumn Header="IP address" Binding="{Binding IpAddress}" Width="125"/>
+                    <DataGridTextColumn Header="Last boot" Binding="{Binding LastBoot}" Width="155"/>
+                    <DataGridTextColumn Header="Message" Binding="{Binding Message}" Width="*"/>
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <TextBox x:Name="LogTextBox" Grid.Row="4" IsReadOnly="True" FontFamily="Consolas" FontSize="12"
+                     Background="#111111" Foreground="#D1D1D1" BorderBrush="#353535" BorderThickness="1"
+                     VerticalScrollBarVisibility="Auto" TextWrapping="Wrap"/>
+        </Grid>
+
+        <DockPanel Grid.Row="5" Margin="0,14,0,0">
+            <ProgressBar x:Name="ProgressBar" Height="5" Width="220" IsIndeterminate="True" Visibility="Collapsed"
+                         Foreground="{StaticResource AccentBrush}" Background="#303030" DockPanel.Dock="Right"/>
+        </DockPanel>
+    </Grid>
+</Window>
