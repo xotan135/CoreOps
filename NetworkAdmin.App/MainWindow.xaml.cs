@@ -81,6 +81,20 @@ public partial class MainWindow : Window
         SaveSettings();
     }
 
+    private void OpenDomainPickerButton_Click(object sender, RoutedEventArgs e)
+    {
+        var picker = new DomainComputerPickerWindow { Owner = this };
+        if (picker.ShowDialog() != true) return;
+        var selected = picker.SelectedComputers.Select(computer => computer.TargetName);
+        var targets = ParseNames(ComputerNamesTextBox.Text)
+            .Concat(selected)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        ComputerNamesTextBox.Text = string.Join(Environment.NewLine, targets);
+        AppendLog($"Target list updated from Active Directory: {targets.Count} computer(s).");
+    }
+
     private async void RestartButton_Click(object sender, RoutedEventArgs e)
     {
         SaveSettings();

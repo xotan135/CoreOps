@@ -128,7 +128,7 @@
                                VerticalAlignment="Center"/>
                     <Border Background="#292929" BorderBrush="#454545" BorderThickness="1"
                             CornerRadius="8" Padding="7,2" Margin="11,0,0,0">
-                        <TextBlock x:Name="AppVersionTextBlock" Text="v0.6.0" FontFamily="Consolas"
+                        <TextBlock x:Name="AppVersionTextBlock" Text="v0.7.1" FontFamily="Consolas"
                                    FontSize="9" Foreground="#BEBEBE"/>
                     </Border>
                 </StackPanel>
@@ -152,7 +152,11 @@
                 <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="14"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                 <Grid.ColumnDefinitions><ColumnDefinition Width="2*"/><ColumnDefinition Width="20"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                 <StackPanel>
-                    <TextBlock Text="Computer names" FontWeight="SemiBold" Foreground="#F1F1F1" Margin="0,0,0,6"/>
+                    <Grid Margin="0,0,0,6">
+                        <TextBlock Text="Computer names" FontWeight="SemiBold" Foreground="#F1F1F1" VerticalAlignment="Center"/>
+                        <Button Content="Select from domain…" HorizontalAlignment="Right" Margin="0" Padding="12,5"
+                                Click="OpenDomainPickerButton_Click"/>
+                    </Grid>
                     <TextBox x:Name="ComputerNamesTextBox" Height="112" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"
                              ToolTip="Enter DNS or NetBIOS names separated by commas, spaces, or new lines"/>
                     <TextBlock Text="Example: workstation-01, server-02" Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,5,0,0"/>

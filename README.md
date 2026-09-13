@@ -1,6 +1,6 @@
 # CoreOps
 
-Current release: **0.6.0**
+Current release: **0.7.1**
 
 ## Versioning
 
@@ -11,7 +11,7 @@ CoreOps follows semantic versioning:
 - Use 1.0.0 when the planned administration features are implemented and production-tested.
 - Update the version properties in NetworkAdmin.App.csproj and add a changelog entry for every release.
 
-A Windows WPF administration console written in C#. The app supports multiple targets, WinRM connectivity checks, inventory collection, protected-computer enforcement, audited restarts, cancellation, and bounded parallel execution. CoreOps is intended only for computers the operator is authorized to administer.
+A Windows WPF administration console written in C#. The app supports manual or Active Directory target selection, WinRM connectivity checks, inventory collection, protected-computer enforcement, audited restarts, cancellation, and bounded parallel execution. CoreOps is intended only for computers the operator is authorized to administer.
 
 
 
@@ -36,6 +36,8 @@ dotnet run --project .\NetworkAdmin.App\NetworkAdmin.App.csproj
 ```
 
 The app runs remote commands as the current Windows user. Run it from an account authorized for the target computers. Target computers must have WinRM/PowerShell remoting configured. In an Active Directory domain, use computer names and Kerberos; do not set `TrustedHosts` to `*`.
+
+The domain-computer picker loads enabled computer objects from Active Directory on demand. It requires domain connectivity, permission to read computer objects, and the Active Directory PowerShell module. The module is normally available on domain controllers and can be installed as part of RSAT on an administration workstation. The selected names are copied into the manual target list before an operation runs.
 
 Audit logs are JSON Lines files under `%LOCALAPPDATA%\NetworkAdmin\Logs`.
 

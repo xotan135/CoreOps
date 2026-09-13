@@ -2,6 +2,27 @@
 
 CoreOps uses semantic versioning while it is under active development.
 
+## 0.7.1 — 2026-09-12
+
+### Changed
+
+- Moved Active Directory computer selection from the main panel into a dedicated modal picker
+- Restored the compact main-window layout and its previous result/activity proportions
+- Added a custom high-contrast selected-computer style, automatic loading, and Select all shown
+
+## 0.7.0 — 2026-09-12
+
+### Added
+
+- Domain computers tab backed by Active Directory
+- On-demand refresh of enabled domain computers
+- Search by computer name or operating system
+- Extended multi-selection with selected computers copied to the manual target list
+
+### Changed
+
+- Increased the main window height to accommodate domain selection without compressing results and activity areas
+
 ## 0.6.0 — 2026-09-12
 
 ### Added
