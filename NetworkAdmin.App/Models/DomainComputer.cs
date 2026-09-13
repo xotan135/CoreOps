@@ -5,7 +5,10 @@ public sealed class DomainComputer
     public string Name { get; init; } = "";
     public string DnsHostName { get; init; } = "";
     public string OperatingSystem { get; init; } = "";
-    public string TargetName => string.IsNullOrWhiteSpace(DnsHostName) ? Name : DnsHostName;
+    public string OperatingSystemVersion { get; init; } = "";
+    public string TargetName => Name;
+    public string OperatingSystemDisplay => string.Join(" ", new[] { OperatingSystem, OperatingSystemVersion }
+        .Where(value => !string.IsNullOrWhiteSpace(value)));
     public string DisplayName => string.IsNullOrWhiteSpace(OperatingSystem)
         ? TargetName
         : $"{TargetName}  —  {OperatingSystem}";

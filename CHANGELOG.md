@@ -2,6 +2,32 @@
 
 CoreOps uses semantic versioning while it is under active development.
 
+## 0.9.0 — 2026-09-12
+
+### Added
+
+- Sortable Computer, Operating system, and OS version columns in the domain picker
+- Search scopes for all fields, computer names, operating systems, or OS versions
+- Exact operating-system/version filter populated from Active Directory results
+
+### Changed
+
+- Domain discovery now requests the Active Directory OperatingSystemVersion property
+- Domain selection uses a sortable dark data grid while preserving extended multi-selection
+
+## 0.8.0 — 2026-09-12
+
+### Added
+
+- Live in-memory HTML session report with no accumulated report files
+- Specific remote failure states for missing names, offline computers, access denial, WinRM failures, and other command failures
+- Explicit Not in workbook result for collected computers without a matching inventory row
+
+### Changed
+
+- Active Directory selections now use the short computer name rather than the fully qualified DNS name
+- PowerShell CLIXML error output is decoded and cleaned before display or audit logging
+
 ## 0.7.1 — 2026-09-12
 
 ### Changed

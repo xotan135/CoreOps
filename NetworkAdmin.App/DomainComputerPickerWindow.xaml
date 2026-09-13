@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Select domain computers" Icon="/Assets/CoreOps.ico"
-        Width="820" Height="620" MinWidth="620" MinHeight="440"
+        Width="980" Height="650" MinWidth="760" MinHeight="470"
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
         Background="#151515" Foreground="#F1F1F1" Loaded="Window_Loaded">
     <Window.Resources>
@@ -18,33 +18,64 @@
             <Setter Property="Foreground" Value="#F4F4F4"/><Setter Property="Background" Value="#353535"/>
             <Setter Property="BorderBrush" Value="#646464"/><Setter Property="BorderThickness" Value="1"/>
         </Style>
-        <Style TargetType="ListBoxItem">
-            <Setter Property="Foreground" Value="#E5E5E5"/>
-            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-            <Setter Property="Padding" Value="9,7"/>
+        <Style TargetType="ComboBox">
+            <Setter Property="Foreground" Value="#FFFFFF"/><Setter Property="Background" Value="#303030"/>
+            <Setter Property="BorderBrush" Value="#606060"/><Setter Property="Padding" Value="6"/>
             <Setter Property="Template">
                 <Setter.Value>
-                    <ControlTemplate TargetType="ListBoxItem">
-                        <Border x:Name="ItemBorder" Background="#1B1B1B" BorderBrush="#303030"
-                                BorderThickness="0,0,0,1" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ItemBorder" Property="Background" Value="#292929"/>
-                            </Trigger>
-                            <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="ItemBorder" Property="Background" Value="#315C59"/>
-                                <Setter TargetName="ItemBorder" Property="BorderBrush" Value="#72DAD4"/>
-                                <Setter Property="Foreground" Value="#FFFFFF"/>
-                            </Trigger>
-                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                                <Setter TargetName="ItemBorder" Property="BorderThickness" Value="1"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <ToggleButton Focusable="False"
+                                          IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                          Background="#303030" BorderBrush="#606060" BorderThickness="1">
+                                <Grid Margin="9,0,7,0">
+                                    <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="18"/></Grid.ColumnDefinitions>
+                                    <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Left"
+                                                      Content="{TemplateBinding SelectionBoxItem}"
+                                                      ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                                      TextElement.Foreground="#FFFFFF"/>
+                                    <Path Grid.Column="1" Data="M 0 0 L 4 4 L 8 0 Z" Fill="#D8D8D8"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Grid>
+                            </ToggleButton>
+                            <Popup x:Name="PART_Popup" IsOpen="{TemplateBinding IsDropDownOpen}" Placement="Bottom" AllowsTransparency="True">
+                                <Border Width="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
+                                        Background="#2B2B2B" BorderBrush="#606060" BorderThickness="1" Padding="1">
+                                    <ScrollViewer MaxHeight="300" CanContentScroll="True"><ItemsPresenter/></ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+        </Style>
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="Foreground" Value="#FFFFFF"/><Setter Property="Background" Value="#2B2B2B"/>
+            <Setter Property="Padding" Value="8,5"/>
+            <Style.Triggers>
+                <Trigger Property="IsHighlighted" Value="True"><Setter Property="Background" Value="#505050"/></Trigger>
+                <Trigger Property="IsSelected" Value="True"><Setter Property="Background" Value="#315C59"/></Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#303030"/><Setter Property="Foreground" Value="#F1F1F1"/>
+            <Setter Property="BorderBrush" Value="#484848"/><Setter Property="Padding" Value="9,8"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+        <Style TargetType="DataGridCell">
+            <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=DataGridRow}}"/>
+            <Setter Property="Background" Value="Transparent"/><Setter Property="BorderBrush" Value="#303030"/>
+            <Setter Property="Padding" Value="8,6"/><Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        </Style>
+        <Style TargetType="DataGridRow">
+            <Setter Property="Background" Value="#1B1B1B"/><Setter Property="Foreground" Value="#E5E5E5"/>
+            <Style.Triggers>
+                <Trigger Property="AlternationIndex" Value="1"><Setter Property="Background" Value="#222222"/></Trigger>
+                <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="#2B2B2B"/></Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#315C59"/><Setter Property="Foreground" Value="#FFFFFF"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
     </Window.Resources>
 
@@ -56,42 +87,35 @@
 
         <StackPanel>
             <TextBlock Text="Select domain computers" FontFamily="Bahnschrift SemiCondensed" FontSize="25" FontWeight="SemiBold"/>
-            <TextBlock Text="Choose one or more enabled computer accounts from Active Directory."
+            <TextBlock Text="Search or filter the directory, click a column heading to sort, then select one or more computers."
                        Foreground="#AFAFAF" Margin="0,3,0,0"/>
         </StackPanel>
 
         <Grid Grid.Row="2">
-            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-            <TextBox x:Name="SearchTextBox" TextChanged="SearchTextBox_TextChanged"
-                     ToolTip="Filter by computer name or operating system"/>
-            <Button x:Name="RefreshButton" Grid.Column="1" Content="Refresh" Click="RefreshButton_Click"/>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/><ColumnDefinition Width="145"/><ColumnDefinition Width="260"/><ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBox x:Name="SearchTextBox" TextChanged="FilterChanged" ToolTip="Enter filter text"/>
+            <ComboBox x:Name="SearchFieldComboBox" Grid.Column="1" Margin="8,0,0,0" SelectedIndex="0"
+                      SelectionChanged="FilterChanged" ToolTip="Choose which field to search">
+                <ComboBoxItem Content="All fields"/><ComboBoxItem Content="Computer name"/>
+                <ComboBoxItem Content="Operating system"/><ComboBoxItem Content="OS version"/>
+            </ComboBox>
+            <ComboBox x:Name="OperatingSystemFilterComboBox" Grid.Column="2" Margin="8,0,0,0" SelectedIndex="0"
+                      SelectionChanged="FilterChanged" ToolTip="Show one operating-system version"/>
+            <Button x:Name="RefreshButton" Grid.Column="3" Content="Refresh" Click="RefreshButton_Click"/>
         </Grid>
 
-        <Border Grid.Row="4" BorderBrush="#444444" BorderThickness="1" Background="#181818">
-            <Grid>
-                <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-                <Grid Background="#2D2D2D">
-                    <Grid.ColumnDefinitions><ColumnDefinition Width="2*"/><ColumnDefinition Width="3*"/></Grid.ColumnDefinitions>
-                    <TextBlock Text="Computer" FontWeight="SemiBold" Padding="9,7"/>
-                    <TextBlock Grid.Column="1" Text="Operating system" FontWeight="SemiBold" Padding="9,7"/>
-                </Grid>
-                <ListBox x:Name="ComputerListBox" Grid.Row="1" SelectionMode="Extended"
-                         Background="#181818" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <Grid>
-                                <Grid.ColumnDefinitions><ColumnDefinition Width="2*"/><ColumnDefinition Width="3*"/></Grid.ColumnDefinitions>
-                                <TextBlock Text="{Binding TargetName}" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ListBoxItem}}"
-                                           TextTrimming="CharacterEllipsis"/>
-                                <TextBlock Grid.Column="1" Text="{Binding OperatingSystem}" Margin="12,0,0,0"
-                                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ListBoxItem}}"
-                                           TextTrimming="CharacterEllipsis"/>
-                            </Grid>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-            </Grid>
-        </Border>
+        <DataGrid x:Name="ComputerGrid" Grid.Row="4" AutoGenerateColumns="False" IsReadOnly="True"
+                  CanUserAddRows="False" CanUserSortColumns="True" SelectionMode="Extended" SelectionUnit="FullRow"
+                  Background="#181818" Foreground="#E5E5E5" BorderBrush="#444444" AlternationCount="2"
+                  GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#303030" HeadersVisibility="Column">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Computer" Binding="{Binding TargetName}" SortMemberPath="TargetName" Width="2*"/>
+                <DataGridTextColumn Header="Operating system" Binding="{Binding OperatingSystem}" SortMemberPath="OperatingSystem" Width="3*"/>
+                <DataGridTextColumn Header="OS version" Binding="{Binding OperatingSystemVersion}" SortMemberPath="OperatingSystemVersion" Width="2*"/>
+            </DataGrid.Columns>
+        </DataGrid>
 
         <Grid Grid.Row="6">
             <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>

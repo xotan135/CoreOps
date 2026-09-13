@@ -1,6 +1,6 @@
 namespace NetworkAdmin.App.Models;
 
-public sealed class ComputerResult
+public sealed record class ComputerResult
 {
     public string ComputerName { get; init; } = "";
     public string State { get; init; } = "Unknown";

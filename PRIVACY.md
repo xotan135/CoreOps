@@ -10,4 +10,6 @@ Inventory may include computer name, hardware identifiers and specifications, Wi
 
 Audit records contain the time, current Windows user name, requested operation, target computer, result state, and result message. They are stored locally under `%LOCALAPPDATA%\NetworkAdmin\Logs`. Local preferences are stored under `%LOCALAPPDATA%\CoreOps\settings.json`.
 
+The HTML session report is generated in memory from the results currently displayed by CoreOps. It exists only while the report window is open and is not automatically written to disk.
+
 CoreOps does not control how an organization stores, retains, or uses the workbook, audit records, or information obtained from managed computers. Operators are responsible for following their organization's privacy, access-control, and retention requirements.

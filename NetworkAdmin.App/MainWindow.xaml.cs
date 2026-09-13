@@ -16,7 +16,10 @@ public partial class MainWindow : Window
     private readonly ExcelInventoryService _excelInventory = new();
     private readonly AuditLogService _audit = new();
     private readonly SettingsService _settings = new();
+    private readonly HtmlReportService _htmlReport = new();
     private CancellationTokenSource? _cancellation;
+    private SessionReportWindow? _reportWindow;
+    private string _reportOperation = "Current session";
 
     public MainWindow()
     {
@@ -47,12 +50,29 @@ public partial class MainWindow : Window
         try
         {
             var result = await _excelInventory.UpdateAsync(workbookPath, collected, CancellationToken.None);
+            foreach (var computerName in result.NotFoundComputers)
+            {
+                var index = _results.ToList().FindIndex(item =>
+                    item.ComputerName.Equals(computerName, StringComparison.OrdinalIgnoreCase));
+                if (index >= 0)
+                {
+                    var missingResult = _results[index] with
+                    {
+                        State = "Not in workbook",
+                        Message = "Inventory was collected, but no matching row exists in Client Systems or Servers."
+                    };
+                    _results[index] = missingResult;
+                    await _audit.WriteAsync("Inventory workbook update", missingResult, CancellationToken.None);
+                    AppendLog($"{computerName}: Not in workbook — no matching row in Client Systems or Servers.");
+                }
+            }
             var message = $"Workbook saved. Updated: {result.UpdatedRows}; not found: {result.NotFoundRows}.";
             AppendLog(message);
             StatusTextBlock.Text = message;
             if (result.NotFoundRows > 0)
                 MessageBox.Show($"{result.NotFoundRows} computer(s) were not found in Client Systems or Servers and were not added.",
                     "Inventory rows not found", MessageBoxButton.OK, MessageBoxImage.Information);
+            UpdateReportWindow();
         }
         catch (Exception ex)
         {
@@ -118,6 +138,26 @@ public partial class MainWindow : Window
 
     private void CancelButton_Click(object sender, RoutedEventArgs e) => _cancellation?.Cancel();
 
+    private void ReportButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_reportWindow is null)
+        {
+            _reportWindow = new SessionReportWindow { Owner = this };
+            _reportWindow.Closed += (_, _) => _reportWindow = null;
+            _reportWindow.Show();
+        }
+        else
+        {
+            _reportWindow.Activate();
+        }
+        UpdateReportWindow();
+    }
+
+    private void UpdateReportWindow()
+    {
+        _reportWindow?.ShowReport(_htmlReport.Create(_reportOperation, _results));
+    }
+
     private async Task RunAsync(string operation, Func<string, CancellationToken, Task<ComputerResult>> action,
         IReadOnlyList<string>? suppliedTargets = null)
     {
@@ -125,7 +165,9 @@ public partial class MainWindow : Window
         if (targets.Count == 0) { ShowTargetError(); return; }
 
         SetBusy(true, $"{operation} running on {targets.Count} computer(s)…");
+        _reportOperation = operation;
         _results.Clear();
+        UpdateReportWindow();
         _cancellation = new CancellationTokenSource();
         var token = _cancellation.Token;
         var parallelism = int.Parse(((ComboBoxItem)ParallelismComboBox.SelectedItem).Content.ToString()!);
@@ -140,7 +182,11 @@ public partial class MainWindow : Window
                 {
                     AppendLog($"{operation}: {target}");
                     var result = await action(target, token);
-                    await Dispatcher.InvokeAsync(() => _results.Add(result));
+                    await Dispatcher.InvokeAsync(() =>
+                    {
+                        _results.Add(result);
+                        UpdateReportWindow();
+                    });
                     await _audit.WriteAsync(operation, result, token);
                     AppendLog($"{target}: {result.State} — {result.Message}");
                 }

@@ -68,6 +68,7 @@ public sealed class ExcelInventoryService
                 var updated = 0;
                 var notFound = 0;
                 var skipped = 0;
+                var notFoundComputers = new List<string>();
 
                 foreach (var item in inventory)
                 {
@@ -84,6 +85,7 @@ public sealed class ExcelInventoryService
                     if (match.Row is null)
                     {
                         notFound++;
+                        notFoundComputers.Add(item.ComputerName);
                         continue;
                     }
 
@@ -93,7 +95,7 @@ public sealed class ExcelInventoryService
 
                 MarkForRecalculation(workbookPart);
                 workbookPart.Workbook.Save();
-                result = new WorkbookUpdateResult(updated, notFound, skipped);
+                result = new WorkbookUpdateResult(updated, notFound, skipped, notFoundComputers);
             }
 
             token.ThrowIfCancellationRequested();

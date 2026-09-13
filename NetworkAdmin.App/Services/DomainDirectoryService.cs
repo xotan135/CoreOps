@@ -12,7 +12,7 @@ public sealed class DomainDirectoryService
         const string script = """
             $ErrorActionPreference = 'Stop'
             Import-Module ActiveDirectory -ErrorAction Stop
-            $computers = Get-ADComputer -Filter * -Properties DNSHostName, OperatingSystem, Enabled |
+            $computers = Get-ADComputer -Filter * -Properties DNSHostName, OperatingSystem, OperatingSystemVersion, Enabled |
                 Where-Object Enabled |
                 Sort-Object Name |
                 ForEach-Object {
@@ -20,6 +20,7 @@ public sealed class DomainDirectoryService
                         Name = [string]$_.Name
                         DnsHostName = [string]$_.DNSHostName
                         OperatingSystem = [string]$_.OperatingSystem
+                        OperatingSystemVersion = [string]$_.OperatingSystemVersion
                     }
                 }
             ConvertTo-Json -InputObject @($computers) -Compress
@@ -29,7 +30,7 @@ public sealed class DomainDirectoryService
         var startInfo = new ProcessStartInfo
         {
             FileName = "powershell.exe",
-            Arguments = $"-NoLogo -NoProfile -NonInteractive -EncodedCommand {encoded}",
+            Arguments = $"-NoLogo -NoProfile -NonInteractive -OutputFormat Text -EncodedCommand {encoded}",
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,

@@ -1,6 +1,11 @@
 using System.Diagnostics;
+using System.Net;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using NetworkAdmin.App.Models;
 
 namespace NetworkAdmin.App.Services;
@@ -77,7 +82,7 @@ public sealed class RemoteManagementService
         var startInfo = new ProcessStartInfo
         {
             FileName = "powershell.exe",
-            Arguments = $"-NoLogo -NoProfile -NonInteractive -EncodedCommand {encoded}",
+            Arguments = $"-NoLogo -NoProfile -NonInteractive -OutputFormat Text -EncodedCommand {encoded}",
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
@@ -91,8 +96,8 @@ public sealed class RemoteManagementService
         try { await process.WaitForExitAsync(token); }
         catch (OperationCanceledException) { if (!process.HasExited) process.Kill(true); throw; }
 
-        var output = (await outputTask).Trim();
-        var error = (await errorTask).Trim();
+        var output = CleanPowerShellText(await outputTask);
+        var error = CleanPowerShellText(await errorTask);
         if (process.ExitCode != 0 || string.IsNullOrWhiteSpace(output))
             return Failed(computerName, CleanError(error, output));
 
@@ -115,14 +120,63 @@ public sealed class RemoteManagementService
         catch (JsonException) { return Failed(computerName, CleanError(error, output)); }
     }
 
-    private static ComputerResult Failed(string computerName, string message) => new()
-    { ComputerName = computerName, State = "Failed", Message = message };
+    private static ComputerResult Failed(string computerName, string message)
+    {
+        var category = CategorizeFailure(computerName, message);
+        return new ComputerResult { ComputerName = computerName, State = category, Message = message };
+    }
 
     private static string CleanError(string error, string output)
     {
         var value = string.IsNullOrWhiteSpace(error) ? output : error;
         var line = value.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
         return string.IsNullOrWhiteSpace(line) ? "The command failed without an error message." : line.Trim();
+    }
+
+    private static string CategorizeFailure(string computerName, string message)
+    {
+        if (Regex.IsMatch(message, "access is denied|unauthorized|0x80070005|authentication failed", RegexOptions.IgnoreCase))
+            return "Access denied";
+        try { _ = Dns.GetHostAddresses(computerName); }
+        catch (SocketException) { return "Not found"; }
+        if (Regex.IsMatch(message, "no such host|name.*(cannot be resolved|does not exist)|cannot find the computer|dns", RegexOptions.IgnoreCase))
+            return "Not found";
+        if (Regex.IsMatch(message, "timed out|unreachable|network path was not found|rpc server is unavailable|0x800706ba|winrm|ws-management|client cannot connect to the destination", RegexOptions.IgnoreCase))
+        {
+            try
+            {
+                using var ping = new Ping();
+                return ping.Send(computerName, 1200)?.Status == IPStatus.Success
+                    ? "WinRM unavailable"
+                    : "Offline/unreachable";
+            }
+            catch (PingException) { return "Offline/unreachable"; }
+        }
+        return "Command failed";
+    }
+
+    private static string CleanPowerShellText(string value)
+    {
+        value = value.Trim();
+        if (!value.Contains("#< CLIXML", StringComparison.OrdinalIgnoreCase)) return value;
+        try
+        {
+            var xmlStart = value.IndexOf('<');
+            var document = XDocument.Parse(value[xmlStart..]);
+            value = string.Join(Environment.NewLine, document.Descendants()
+                .Where(element => element.Name.LocalName == "S" &&
+                                  string.Equals((string?)element.Attribute("S"), "Error", StringComparison.OrdinalIgnoreCase))
+                .Select(element => element.Value));
+        }
+        catch
+        {
+            value = Regex.Replace(value.Replace("#< CLIXML", "", StringComparison.OrdinalIgnoreCase), "<[^>]+>", " ");
+        }
+
+        return Regex.Replace(value, "_x([0-9A-Fa-f]{4})_", match =>
+                char.ConvertFromUtf32(Convert.ToInt32(match.Groups[1].Value, 16)))
+            .Replace("  ", " ", StringComparison.Ordinal)
+            .Trim();
     }
 
     private sealed class PowerShellResult

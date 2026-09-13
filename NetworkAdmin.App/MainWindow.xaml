@@ -128,7 +128,7 @@
                                VerticalAlignment="Center"/>
                     <Border Background="#292929" BorderBrush="#454545" BorderThickness="1"
                             CornerRadius="8" Padding="7,2" Margin="11,0,0,0">
-                        <TextBlock x:Name="AppVersionTextBlock" Text="v0.7.1" FontFamily="Consolas"
+                        <TextBlock x:Name="AppVersionTextBlock" Text="v0.9.0" FontFamily="Consolas"
                                    FontSize="9" Foreground="#BEBEBE"/>
                     </Border>
                 </StackPanel>
@@ -187,6 +187,7 @@
                     <Button x:Name="CheckButton" Content="Check WinRM" Click="CheckButton_Click" Background="#383838" BorderBrush="#666666"/>
                     <Button x:Name="InventoryButton" Content="Collect inventory" Click="InventoryButton_Click" Background="#3A3A3A" BorderBrush="#747474"/>
                     <Button x:Name="RestartButton" Content="Restart…" Click="RestartButton_Click" Background="#403536" BorderBrush="#76595C"/>
+                    <Button x:Name="ReportButton" Content="Session report" Click="ReportButton_Click" Background="#303B3B" BorderBrush="#55706E"/>
                     <Button x:Name="CancelButton" Content="Cancel" Click="CancelButton_Click" IsEnabled="False"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
