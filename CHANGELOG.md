@@ -2,6 +2,19 @@
 
 CoreOps uses semantic versioning while it is under active development.
 
+## 0.6.0 — 2026-09-12
+
+### Added
+
+- Browse button for selecting the macro-enabled inventory workbook
+- Direct Open XML workbook updates without requiring Microsoft Excel
+- Safe temporary-copy update and replacement process
+
+### Changed
+
+- Workbooks are marked for formula recalculation the next time they are opened in Excel
+- Missing-file and locked-workbook errors no longer refer to a mapped drive
+
 ## 0.5.0 — 2026-09-12
 
 ### Added

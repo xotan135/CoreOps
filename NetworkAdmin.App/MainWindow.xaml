@@ -128,7 +128,7 @@
                                VerticalAlignment="Center"/>
                     <Border Background="#292929" BorderBrush="#454545" BorderThickness="1"
                             CornerRadius="8" Padding="7,2" Margin="11,0,0,0">
-                        <TextBlock x:Name="AppVersionTextBlock" Text="v0.5.0" FontFamily="Consolas"
+                        <TextBlock x:Name="AppVersionTextBlock" Text="v0.6.0" FontFamily="Consolas"
                                    FontSize="9" Foreground="#BEBEBE"/>
                     </Border>
                 </StackPanel>
@@ -165,8 +165,13 @@
                 </StackPanel>
                 <StackPanel Grid.Row="2" Grid.ColumnSpan="3">
                     <TextBlock Text="Inventory workbook" FontWeight="SemiBold" Foreground="#F1F1F1" Margin="0,0,0,6"/>
-                    <TextBox x:Name="InventoryPathTextBox"
-                             ToolTip="Path to an existing macro-enabled inventory workbook; stored only in local settings"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                        <TextBox x:Name="InventoryPathTextBox"
+                                 ToolTip="Path to an existing macro-enabled inventory workbook; stored only in local settings"/>
+                        <Button x:Name="BrowseInventoryButton" Grid.Column="1" Content="Browse…" Margin="9,0,0,0"
+                                Padding="17,8" Click="BrowseInventoryButton_Click"/>
+                    </Grid>
                 </StackPanel>
             </Grid>
         </Border>

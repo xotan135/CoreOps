@@ -1,6 +1,6 @@
 # CoreOps
 
-Current release: **0.5.0**
+Current release: **0.6.0**
 
 ## Versioning
 
@@ -15,7 +15,7 @@ A Windows WPF administration console written in C#. The app supports multiple ta
 
 
 
-Inventory collection updates existing computer rows in the `Client Systems` or `Servers` worksheet of the workbook selected by the operator. It matches the `Name` column case-insensitively, preserves macros and business-maintained columns, and does not silently add unknown computers. Microsoft Excel must be installed, the workbook must be writable, and the workbook should be closed before collection starts.
+Inventory collection updates existing computer rows in the `Client Systems` or `Servers` worksheet of the `.xlsm` workbook selected by the operator. It matches the `Name` column case-insensitively, preserves macros and business-maintained columns, and does not silently add unknown computers. Microsoft Excel is not required. The workbook must be writable and should not be open by another user during an update.
 
 The inventory workbook path and protected-computer list are local preferences stored in `%LOCALAPPDATA%\CoreOps\settings.json`; they are not transmitted to the project maintainers.
 

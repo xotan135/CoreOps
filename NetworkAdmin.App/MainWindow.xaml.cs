@@ -1,7 +1,9 @@
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using Microsoft.Win32;
 using NetworkAdmin.App.Models;
 using NetworkAdmin.App.Services;
 
@@ -59,6 +61,24 @@ public partial class MainWindow : Window
             MessageBox.Show(ex.Message, "Could not update inventory workbook", MessageBoxButton.OK, MessageBoxImage.Error);
         }
         finally { SetBusy(false, StatusTextBlock.Text); }
+    }
+
+    private void BrowseInventoryButton_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFileDialog
+        {
+            Title = "Select inventory workbook",
+            Filter = "Macro-enabled Excel workbook (*.xlsm)|*.xlsm",
+            CheckFileExists = true,
+            Multiselect = false
+        };
+        var currentPath = Environment.ExpandEnvironmentVariables(InventoryPathTextBox.Text.Trim());
+        var currentDirectory = Path.GetDirectoryName(currentPath);
+        if (!string.IsNullOrWhiteSpace(currentDirectory) && Directory.Exists(currentDirectory))
+            dialog.InitialDirectory = currentDirectory;
+        if (dialog.ShowDialog(this) != true) return;
+        InventoryPathTextBox.Text = dialog.FileName;
+        SaveSettings();
     }
 
     private async void RestartButton_Click(object sender, RoutedEventArgs e)

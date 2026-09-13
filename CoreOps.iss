@@ -3,7 +3,7 @@
 ; Non-commercial use only.
 
 #define MyAppName "CoreOps"
-#define MyAppVersion "0.5.0"
+#define MyAppVersion "0.6.0"
 #define MyAppPublisher "CoreOps Project"
 #define MyAppExeName "CoreOps.exe"
 #define DoubleAmp(Value) StringChange(Value, "&", "&&")
@@ -30,7 +30,7 @@ DisableProgramGroupPage=yes
 ; Uncomment the following line to run in non administrative install mode (install for current user only).
 ;PrivilegesRequired=lowest
 OutputDir=release
-OutputBaseFilename=CoreOps-Setup-0.5.0-x64
+OutputBaseFilename=CoreOps-Setup-0.6.0-x64
 SetupIconFile=NetworkAdmin.App\Assets\CoreOps.ico
 LicenseFile=LICENSE
 SolidCompression=yes

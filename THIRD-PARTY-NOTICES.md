@@ -11,3 +11,5 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 The .NET runtime itself contains third-party components and notices. The authoritative notices for the exact runtime version used to build a release are available in the corresponding [.NET runtime source release](https://github.com/dotnet/runtime/releases). Release maintainers must review and preserve those notices when the bundled runtime version changes.
+
+CoreOps uses the [Open XML SDK](https://github.com/dotnet/Open-XML-SDK), copyright Microsoft Corporation and contributors, under the MIT License. Its license and dependency notices are distributed with its NuGet package and source repository.
