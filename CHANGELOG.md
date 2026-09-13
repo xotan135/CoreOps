@@ -2,6 +2,36 @@
 
 CoreOps uses semantic versioning while it is under active development.
 
+## 0.10.1 — 2026-09-12
+
+### Fixed
+
+- Kept empty Windows LAPS result grids dark instead of falling back to the Windows light theme.
+- Added consistent dark hover, selected, pressed, and disabled states for Windows LAPS controls.
+
+## 0.10.0 — 2026-09-12
+
+### Added
+
+- Dedicated Windows LAPS workspace accessible from the CoreOps header
+- Password Operations and password-free Activity tabs
+- Active Directory computer search and authorized current/password-history retrieval
+- Masked password display with explicit reveal and copy controls
+- Automatic 30-second clipboard clearing and clearing when the LAPS window closes
+- Confirmed LAPS password-expiration/rotation requests
+
+### Security
+
+- Password values remain in process memory or the clipboard and are never written to logs, settings, reports, or workbooks
+- LAPS and Active Directory continue to authorize every operation using the signed-in Windows identity
+- The reference-only `laps-main` directory is excluded from the CoreOps repository
+
+## 0.9.1 — 2026-09-12
+
+### Changed
+
+- Workbook Updated/Last Updated timestamps now use `MM.dd.yyyy HH:mm`.
+
 ## 0.9.0 — 2026-09-12
 
 ### Added

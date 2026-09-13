@@ -19,6 +19,7 @@ public partial class MainWindow : Window
     private readonly HtmlReportService _htmlReport = new();
     private CancellationTokenSource? _cancellation;
     private SessionReportWindow? _reportWindow;
+    private LapsWindow? _lapsWindow;
     private string _reportOperation = "Current session";
 
     public MainWindow()
@@ -113,6 +114,20 @@ public partial class MainWindow : Window
             .ToList();
         ComputerNamesTextBox.Text = string.Join(Environment.NewLine, targets);
         AppendLog($"Target list updated from Active Directory: {targets.Count} computer(s).");
+    }
+
+    private void OpenLapsButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_lapsWindow is null)
+        {
+            _lapsWindow = new LapsWindow { Owner = this };
+            _lapsWindow.Closed += (_, _) => _lapsWindow = null;
+            _lapsWindow.Show();
+        }
+        else
+        {
+            _lapsWindow.Activate();
+        }
     }
 
     private async void RestartButton_Click(object sender, RoutedEventArgs e)

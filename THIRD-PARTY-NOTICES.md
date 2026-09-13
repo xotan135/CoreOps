@@ -13,3 +13,5 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 The .NET runtime itself contains third-party components and notices. The authoritative notices for the exact runtime version used to build a release are available in the corresponding [.NET runtime source release](https://github.com/dotnet/runtime/releases). Release maintainers must review and preserve those notices when the bundled runtime version changes.
 
 CoreOps uses the [Open XML SDK](https://github.com/dotnet/Open-XML-SDK), copyright Microsoft Corporation and contributors, under the MIT License. Its license and dependency notices are distributed with its NuGet package and source repository.
+
+The integrated Windows LAPS workflow was adapted from the MIT-licensed LapsDesk reference project, copyright (c) 2026 John Turner.

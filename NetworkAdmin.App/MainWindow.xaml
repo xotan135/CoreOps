@@ -128,21 +128,25 @@
                                VerticalAlignment="Center"/>
                     <Border Background="#292929" BorderBrush="#454545" BorderThickness="1"
                             CornerRadius="8" Padding="7,2" Margin="11,0,0,0">
-                        <TextBlock x:Name="AppVersionTextBlock" Text="v0.9.0" FontFamily="Consolas"
+                        <TextBlock x:Name="AppVersionTextBlock" Text="v0.10.1" FontFamily="Consolas"
                                    FontSize="9" Foreground="#BEBEBE"/>
                     </Border>
                 </StackPanel>
             </StackPanel>
-            <Border Grid.Column="2" VerticalAlignment="Center" Background="#202020" BorderBrush="#3D3D3D"
-                    BorderThickness="1" CornerRadius="15" Padding="12,7" MaxWidth="390">
-                <StackPanel Orientation="Horizontal">
-                    <Ellipse Width="7" Height="7" Fill="#65D9B5" Margin="0,0,8,0" VerticalAlignment="Center">
-                        <Ellipse.Effect><DropShadowEffect Color="#65D9B5" BlurRadius="6" ShadowDepth="0"/></Ellipse.Effect>
-                    </Ellipse>
-                    <TextBlock x:Name="StatusTextBlock" Text="Ready" Foreground="#D2D2D2" FontSize="11"
-                               VerticalAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="340"/>
+            <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Border Background="#315C59" BorderBrush="#72DAD4" BorderThickness="1" CornerRadius="5" Padding="11,6">
+                        <TextBlock Text="Network admin" FontWeight="SemiBold" FontSize="11"/>
+                    </Border>
+                    <Button Content="Windows LAPS" Margin="8,0,0,0" Padding="11,6" Click="OpenLapsButton_Click"/>
                 </StackPanel>
-            </Border>
+                <Border Background="#202020" BorderBrush="#3D3D3D" BorderThickness="1" CornerRadius="13" Padding="11,6" Margin="0,7,0,0" MaxWidth="390">
+                    <StackPanel Orientation="Horizontal">
+                        <Ellipse Width="7" Height="7" Fill="#65D9B5" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="StatusTextBlock" Text="Ready" Foreground="#D2D2D2" FontSize="11" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="330"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
         </Grid>
 
         <Border Grid.Row="2" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}"

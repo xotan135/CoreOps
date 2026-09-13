@@ -1,0 +1,96 @@
+<Window x:Class="NetworkAdmin.App.LapsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="CoreOps — Windows LAPS" Icon="/Assets/CoreOps.ico"
+        Width="1180" Height="760" MinWidth="960" MinHeight="620"
+        WindowStartupLocation="CenterOwner" Background="#151515" Foreground="#F1F1F1"
+        Closed="Window_Closed">
+  <Window.Resources>
+    <Style TargetType="TextBlock"><Setter Property="Foreground" Value="#F1F1F1"/></Style>
+    <Style TargetType="TextBox">
+      <Setter Property="Padding" Value="9"/><Setter Property="Foreground" Value="#F2F2F2"/>
+      <Setter Property="Background" Value="#181818"/><Setter Property="BorderBrush" Value="#414141"/>
+      <Setter Property="CaretBrush" Value="White"/><Setter Property="SelectionBrush" Value="#476F6C"/>
+    </Style>
+    <Style TargetType="Button">
+      <Setter Property="Padding" Value="15,9"/><Setter Property="Margin" Value="0,0,9,0"/>
+      <Setter Property="Cursor" Value="Hand"/><Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="Foreground" Value="#F4F4F4"/><Setter Property="Background" Value="#353535"/>
+      <Setter Property="BorderBrush" Value="#646464"/><Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+        <Border x:Name="ButtonBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="3" Padding="{TemplateBinding Padding}"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+        <ControlTemplate.Triggers>
+          <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="ButtonBorder" Property="Opacity" Value="0.88"/></Trigger>
+          <Trigger Property="IsPressed" Value="True"><Setter TargetName="ButtonBorder" Property="Opacity" Value="0.70"/></Trigger>
+          <Trigger Property="IsEnabled" Value="False"><Setter TargetName="ButtonBorder" Property="Background" Value="#292929"/><Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#414141"/><Setter TargetName="ButtonBorder" Property="Opacity" Value="1"/><Setter Property="Foreground" Value="#7D7D7D"/><Setter Property="Cursor" Value="Arrow"/></Trigger>
+        </ControlTemplate.Triggers>
+      </ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style TargetType="TabControl"><Setter Property="Background" Value="#151515"/><Setter Property="BorderBrush" Value="#414141"/></Style>
+    <Style TargetType="TabItem">
+      <Setter Property="Foreground" Value="#D5D5D5"/><Setter Property="Background" Value="#2B2B2B"/><Setter Property="Padding" Value="18,9"/><Setter Property="Margin" Value="0,0,5,0"/>
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="TabItem"><Border x:Name="TabBorder" Background="{TemplateBinding Background}" BorderBrush="#444444" BorderThickness="1,1,1,0" CornerRadius="5,5,0,0" Padding="{TemplateBinding Padding}"><ContentPresenter ContentSource="Header"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="TabBorder" Property="Background" Value="#3A3A3A"/></Trigger><Trigger Property="IsSelected" Value="True"><Setter TargetName="TabBorder" Property="Background" Value="#315C59"/><Setter TargetName="TabBorder" Property="BorderBrush" Value="#72DAD4"/><Setter Property="Foreground" Value="White"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style TargetType="DataGrid"><Setter Property="Background" Value="#181818"/><Setter Property="Foreground" Value="#E8E8E8"/><Setter Property="BorderBrush" Value="#414141"/><Setter Property="RowBackground" Value="#1B1B1B"/><Setter Property="AlternatingRowBackground" Value="#222222"/><Setter Property="HorizontalGridLinesBrush" Value="#303030"/><Setter Property="VerticalGridLinesBrush" Value="#303030"/><Setter Property="GridLinesVisibility" Value="Horizontal"/></Style>
+    <Style TargetType="DataGridColumnHeader">
+      <Setter Property="Background" Value="#303030"/><Setter Property="Foreground" Value="#F1F1F1"/>
+      <Setter Property="BorderBrush" Value="#484848"/><Setter Property="Padding" Value="8"/><Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+    <Style TargetType="DataGridCell"><Setter Property="Foreground" Value="#E8E8E8"/><Setter Property="Background" Value="Transparent"/><Setter Property="BorderBrush" Value="#303030"/><Setter Property="Padding" Value="7,5"/><Style.Triggers><Trigger Property="IsSelected" Value="True"><Setter Property="Background" Value="Transparent"/><Setter Property="Foreground" Value="White"/><Setter Property="BorderBrush" Value="#72DAD4"/></Trigger></Style.Triggers></Style>
+    <Style TargetType="DataGridRow">
+      <Setter Property="Background" Value="#1B1B1B"/><Setter Property="Foreground" Value="#E8E8E8"/>
+      <Style.Triggers><Trigger Property="AlternationIndex" Value="1"><Setter Property="Background" Value="#222222"/></Trigger><Trigger Property="IsSelected" Value="True"><Setter Property="Background" Value="#315C59"/></Trigger></Style.Triggers>
+    </Style>
+  </Window.Resources>
+
+  <Grid>
+    <Grid.RowDefinitions><RowDefinition Height="82"/><RowDefinition Height="*"/><RowDefinition Height="45"/></Grid.RowDefinitions>
+    <Border Background="#202020" BorderBrush="#343434" BorderThickness="0,0,0,1" Padding="24,10">
+      <DockPanel>
+        <Image Source="/Assets/network-admin-logo-v3.png" Width="58" Height="58" DockPanel.Dock="Left" Margin="0,0,14,0"/>
+        <StackPanel VerticalAlignment="Center">
+          <TextBlock FontFamily="Bahnschrift SemiCondensed" FontSize="26" FontWeight="SemiBold"><Run Text="CORE"/><Run Text="OPS" Foreground="#78DDD7"/><Run Text="  WINDOWS LAPS" Foreground="#BDBDBD" FontSize="18"/></TextBlock>
+          <TextBlock Text="Passwords remain in memory and are never written to CoreOps logs." Foreground="#9F9F9F" FontSize="12"/>
+        </StackPanel>
+      </DockPanel>
+    </Border>
+
+    <TabControl Grid.Row="1" Margin="20,15">
+      <TabItem Header="Password operations">
+        <Grid Margin="16">
+          <Grid.ColumnDefinitions><ColumnDefinition Width="330"/><ColumnDefinition Width="16"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+          <Border Background="#202020" BorderBrush="#414141" BorderThickness="1" CornerRadius="8" Padding="14">
+            <Grid>
+              <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+              <TextBlock Text="Find a computer" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,9"/>
+              <Grid Grid.Row="1"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBox x:Name="SearchTextBox" ToolTip="Enter at least two characters"/><Button Grid.Column="1" Content="Search" Margin="8,0,0,0" IsDefault="True" Click="SearchButton_Click"/></Grid>
+              <DataGrid x:Name="ComputerGrid" Grid.Row="2" Margin="0,12,0,0" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" SelectionUnit="FullRow" AlternationCount="2" SelectionChanged="ComputerGrid_SelectionChanged">
+                <DataGrid.Columns><DataGridTextColumn Header="Computer" Binding="{Binding Name}" Width="*"/><DataGridTextColumn Header="State" Binding="{Binding EnabledDisplay}" Width="76"/></DataGrid.Columns>
+              </DataGrid>
+            </Grid>
+          </Border>
+
+          <Border Grid.Column="2" Background="#202020" BorderBrush="#414141" BorderThickness="1" CornerRadius="8" Padding="20">
+            <Grid>
+              <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+              <Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><StackPanel><TextBlock Text="Selected computer" Foreground="#AFAFAF"/><TextBlock x:Name="SelectedComputerTextBlock" Text="No computer selected" FontSize="24" FontWeight="SemiBold"/><TextBlock x:Name="SelectedDnsTextBlock" Foreground="#AFAFAF"/></StackPanel><Button x:Name="RetrieveButton" Grid.Column="1" Content="Retrieve password" Click="RetrieveButton_Click" IsEnabled="False"/></Grid>
+              <DataGrid x:Name="PasswordHistoryGrid" Grid.Row="2" Margin="0,18,0,12" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" SelectionUnit="FullRow" AlternationCount="2" SelectionChanged="PasswordHistoryGrid_SelectionChanged">
+                <DataGrid.Columns><DataGridTextColumn Header="Version" Binding="{Binding Version}" Width="100"/><DataGridTextColumn Header="Changed" Binding="{Binding ChangedDisplay}" Width="170"/><DataGridTextColumn Header="Expires" Binding="{Binding ExpiresDisplay}" Width="170"/><DataGridTextColumn Header="Account" Binding="{Binding Account}" Width="*"/></DataGrid.Columns>
+              </DataGrid>
+              <Border Grid.Row="3" Background="#181818" BorderBrush="#414141" BorderThickness="1" CornerRadius="6" Padding="14">
+                <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="Password" Foreground="#AFAFAF" VerticalAlignment="Center" Margin="0,0,14,0"/><TextBox x:Name="PasswordDisplayTextBox" Grid.Column="1" IsReadOnly="True" Focusable="False" FontFamily="Consolas" FontSize="16"/><CheckBox x:Name="RevealPasswordCheckBox" Grid.Column="2" Content="Reveal" Foreground="#E8E8E8" Margin="12,0,0,0" VerticalAlignment="Center" Click="RevealPasswordCheckBox_Click"/></Grid>
+              </Border>
+              <StackPanel Grid.Row="4" Orientation="Horizontal" Margin="0,12,0,0"><Button x:Name="CopyPasswordButton" Content="Copy password" Click="CopyPasswordButton_Click" IsEnabled="False" Background="#315C59" BorderBrush="#72DAD4"/><Button x:Name="RotateButton" Content="Request rotation…" Click="RotateButton_Click" IsEnabled="False" Background="#403536" BorderBrush="#76595C"/><Button Content="Clear" Click="ClearButton_Click"/></StackPanel>
+            </Grid>
+          </Border>
+        </Grid>
+      </TabItem>
+
+      <TabItem Header="Activity">
+        <Grid Margin="16"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="10"/><RowDefinition Height="*"/></Grid.RowDefinitions><DockPanel><TextBlock Text="Password-free LAPS activity" FontSize="17" FontWeight="SemiBold"/><Button Content="Refresh" DockPanel.Dock="Right" HorizontalAlignment="Right" Click="RefreshAuditButton_Click"/></DockPanel><DataGrid x:Name="AuditGrid" Grid.Row="2" AutoGenerateColumns="False" IsReadOnly="True" AlternationCount="2"><DataGrid.Columns><DataGridTextColumn Header="Time" Binding="{Binding Timestamp}" Width="150"/><DataGridTextColumn Header="User" Binding="{Binding User}" Width="130"/><DataGridTextColumn Header="Action" Binding="{Binding Action}" Width="170"/><DataGridTextColumn Header="Computer" Binding="{Binding Computer}" Width="140"/><DataGridTextColumn Header="Outcome" Binding="{Binding Outcome}" Width="100"/><DataGridTextColumn Header="Detail" Binding="{Binding Detail}" Width="*"/></DataGrid.Columns></DataGrid></Grid>
+      </TabItem>
+    </TabControl>
+
+    <Border Grid.Row="2" Background="#202020" BorderBrush="#343434" BorderThickness="0,1,0,0" Padding="22,0"><TextBlock x:Name="StatusTextBlock" Text="Ready" Foreground="#BEBEBE" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/></Border>
+  </Grid>
+</Window>

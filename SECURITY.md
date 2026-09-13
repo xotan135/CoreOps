@@ -13,3 +13,5 @@ Please allow a reasonable period for investigation and remediation before public
 ## Operational security
 
 CoreOps is intended only for systems the operator is authorized to administer. It runs commands as the current Windows user, does not collect credentials, and should be deployed using least-privilege accounts appropriate for the requested operation. Do not configure WinRM `TrustedHosts` as `*`.
+
+Windows LAPS operations rely entirely on Microsoft LAPS and Active Directory authorization for the signed-in Windows identity. The interface does not store retrieved passwords and clears an unchanged copied password from the clipboard after 30 seconds or when the LAPS window closes. Domain-controller and Windows LAPS operational events remain the authoritative security audit.

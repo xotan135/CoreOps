@@ -1,6 +1,6 @@
 # CoreOps
 
-Current release: **0.9.0**
+Current release: **0.10.1**
 
 ## Versioning
 
@@ -42,6 +42,12 @@ The domain-computer picker loads enabled computer objects from Active Directory 
 Audit logs are JSON Lines files under `%LOCALAPPDATA%\NetworkAdmin\Logs`.
 
 The Session report button opens a live HTML report inside CoreOps. The report reflects the current session and is kept in memory only; CoreOps does not accumulate HTML report files. Remote failures are grouped into useful states such as Not found, Offline/unreachable, Access denied, WinRM unavailable, and Command failed. Inventory collected from a computer that has no matching workbook row is shown as Not in workbook.
+
+## Windows LAPS
+
+The Windows LAPS workspace opens from the module navigation in the CoreOps header. It searches Active Directory, retrieves the authorized current password and up to three history entries, copies a selected password with an automatic 30-second clipboard timeout, and requests password rotation. The Activity tab records password-free operational events only.
+
+LAPS operations require the Microsoft Windows LAPS PowerShell module, the Active Directory PowerShell module, domain connectivity, and delegated permissions. CoreOps supplies no alternate credentials and cannot bypass Active Directory authorization. Plaintext passwords are kept only in process memory and the Windows clipboard; they are never written to CoreOps logs, reports, or settings.
 
 ## Build
 

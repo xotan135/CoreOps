@@ -12,4 +12,6 @@ Audit records contain the time, current Windows user name, requested operation, 
 
 The HTML session report is generated in memory from the results currently displayed by CoreOps. It exists only while the report window is open and is not automatically written to disk.
 
+Windows LAPS passwords are requested only when the operator selects Retrieve password. Passwords are held temporarily in process memory and, when requested, the Windows clipboard. CoreOps never writes a LAPS password to settings, audit records, the inventory workbook, or the HTML session report. LAPS activity records are stored under `%LOCALAPPDATA%\CoreOps\Logs` without password values.
+
 CoreOps does not control how an organization stores, retains, or uses the workbook, audit records, or information obtained from managed computers. Operators are responsible for following their organization's privacy, access-control, and retention requirements.

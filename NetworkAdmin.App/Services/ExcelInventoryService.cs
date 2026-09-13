@@ -195,7 +195,7 @@ public sealed class ExcelInventoryService
             [nameof(item.EthernetMac)] = CellValueToWrite.Text(item.EthernetMac),
             [nameof(item.WirelessMac)] = CellValueToWrite.Text(item.WirelessMac),
             [nameof(item.VncVersion)] = CellValueToWrite.Text(item.VncVersion),
-            ["Updated"] = CellValueToWrite.Text(DateTime.Now.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture)),
+            ["Updated"] = CellValueToWrite.Text(DateTime.Now.ToString("MM.dd.yyyy HH:mm", CultureInfo.InvariantCulture)),
         };
 
         foreach (var pair in values)
