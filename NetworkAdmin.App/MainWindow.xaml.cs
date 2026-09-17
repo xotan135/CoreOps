@@ -20,18 +20,26 @@ public partial class MainWindow : Window
     private CancellationTokenSource? _cancellation;
     private SessionReportWindow? _reportWindow;
     private LapsWindow? _lapsWindow;
+    private DcuWindow? _dcuWindow;
     private string _reportOperation = "Current session";
 
     public MainWindow()
     {
         InitializeComponent();
+        WindowSizingService.RememberPlacement(this, "MainWindow");
         var version = Assembly.GetEntryAssembly()?.GetName().Version;
         AppVersionTextBlock.Text = version is null ? "development" : $"v{version.Major}.{version.Minor}.{version.Build}";
         var settings = _settings.Load();
         InventoryPathTextBox.Text = settings.InventoryWorkbookPath;
         ProtectedNamesTextBox.Text = string.Join(Environment.NewLine, settings.ProtectedComputers);
+        if (settings.MainInputHeight > 0)
+            InputSectionRow.Height = new GridLength(Math.Clamp(settings.MainInputHeight, 185, 430));
+        if (settings.TargetPaneRatio is > 0.2 and < 0.8)
+        {
+            TargetPaneColumn.Width = new GridLength(settings.TargetPaneRatio, GridUnitType.Star);
+            ProtectedPaneColumn.Width = new GridLength(1 - settings.TargetPaneRatio, GridUnitType.Star);
+        }
         Closing += (_, _) => SaveSettings();
-        ResultsGrid.ItemsSource = _results;
         AppendLog("Application ready. Commands run as the current Windows user.");
     }
 
@@ -127,6 +135,20 @@ public partial class MainWindow : Window
         else
         {
             _lapsWindow.Activate();
+        }
+    }
+
+    private void OpenDcuButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_dcuWindow is null)
+        {
+            _dcuWindow = new DcuWindow(ParseNames(ComputerNamesTextBox.Text)) { Owner = this };
+            _dcuWindow.Closed += (_, _) => _dcuWindow = null;
+            _dcuWindow.Show();
+        }
+        else
+        {
+            _dcuWindow.Activate();
         }
     }
 
@@ -240,6 +262,9 @@ public partial class MainWindow : Window
     private void SaveSettings() => _settings.Save(new AppSettings
     {
         InventoryWorkbookPath = InventoryPathTextBox.Text.Trim(),
-        ProtectedComputers = ParseNames(ProtectedNamesTextBox.Text)
+        ProtectedComputers = ParseNames(ProtectedNamesTextBox.Text),
+        MainInputHeight = InputSectionRow.ActualHeight,
+        TargetPaneRatio = TargetPaneColumn.ActualWidth + ProtectedPaneColumn.ActualWidth <= 0 ? 2d / 3d :
+            TargetPaneColumn.ActualWidth / (TargetPaneColumn.ActualWidth + ProtectedPaneColumn.ActualWidth)
     });
 }

@@ -2,6 +2,44 @@
 
 CoreOps uses semantic versioning while it is under active development.
 
+## 0.11.2 — 2026-09-16
+
+### Added
+
+- Draggable horizontal resizing between the target-computer and protected-computer panes.
+- Draggable vertical resizing between the main input panel and activity log.
+- Persistent main-pane proportions across application sessions.
+
+## 0.11.1 — 2026-09-16
+
+### Added
+
+- Per-window memory for size, position, and maximized state across CoreOps sessions.
+
+### Fixed
+
+- Saved window positions are validated against connected monitor work areas before restoration, preventing inaccessible off-screen windows after display or remote-session changes.
+
+## 0.11.0 — 2026-09-16
+
+### Added
+
+- Dedicated Dell Command Update workspace with remote detection, scanning, confirmed installation, audit entries, and reboot-required reporting.
+- Domain-computer selection within the Dell updates workspace.
+
+### Changed
+
+- Main, LAPS, domain-picker, session-report, and Dell-update windows now constrain themselves to the current monitor's usable work area with DPI-aware sizing.
+- Reduced secondary-window minimum dimensions for smaller displays and remote sessions.
+
+## 0.10.2 — 2026-09-16
+
+### Changed
+
+- The main window now launches maximized and supports smaller displays without placing title-bar controls off screen.
+- Removed the redundant inline results table; complete results remain available in Session report.
+- Reduced header, form, spacing, and activity-log sizing to give operations more usable space on lower-resolution screens.
+
 ## 0.10.1 — 2026-09-12
 
 ### Fixed
@@ -129,7 +167,6 @@ First tracked pre-release.
 ### Still planned before 1.0
 
 - Windows Update operations
-- Dell Command Update scan and installation
 - Group Policy refresh
 - WPKG service control
 - VNC configuration deployment

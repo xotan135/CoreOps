@@ -1,0 +1,35 @@
+<Window x:Class="NetworkAdmin.App.DcuWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="CoreOps — Dell Command Update" Icon="/Assets/CoreOps.ico"
+        Width="1060" Height="680" MinWidth="720" MinHeight="500"
+        WindowStartupLocation="CenterOwner" ResizeMode="CanResize" Background="#151515" Foreground="#F1F1F1">
+  <Window.Resources>
+    <Style TargetType="TextBlock"><Setter Property="Foreground" Value="#F1F1F1"/></Style>
+    <Style TargetType="TextBox"><Setter Property="Padding" Value="8"/><Setter Property="Foreground" Value="#F2F2F2"/><Setter Property="Background" Value="#181818"/><Setter Property="BorderBrush" Value="#414141"/><Setter Property="CaretBrush" Value="White"/><Setter Property="SelectionBrush" Value="#476F6C"/></Style>
+    <Style TargetType="Button"><Setter Property="Padding" Value="14,8"/><Setter Property="Margin" Value="0,0,8,0"/><Setter Property="Cursor" Value="Hand"/><Setter Property="FontWeight" Value="SemiBold"/><Setter Property="Foreground" Value="#F4F4F4"/><Setter Property="Background" Value="#353535"/><Setter Property="BorderBrush" Value="#646464"/><Setter Property="BorderThickness" Value="1"/></Style>
+    <Style TargetType="DataGrid"><Setter Property="Background" Value="#181818"/><Setter Property="Foreground" Value="#E8E8E8"/><Setter Property="BorderBrush" Value="#414141"/><Setter Property="RowBackground" Value="#1B1B1B"/><Setter Property="AlternatingRowBackground" Value="#222222"/><Setter Property="GridLinesVisibility" Value="Horizontal"/><Setter Property="HorizontalGridLinesBrush" Value="#303030"/></Style>
+    <Style TargetType="DataGridColumnHeader"><Setter Property="Background" Value="#303030"/><Setter Property="Foreground" Value="#F1F1F1"/><Setter Property="BorderBrush" Value="#484848"/><Setter Property="Padding" Value="8"/><Setter Property="FontWeight" Value="SemiBold"/></Style>
+    <Style TargetType="DataGridCell"><Setter Property="Foreground" Value="#E8E8E8"/><Setter Property="Background" Value="Transparent"/><Setter Property="BorderBrush" Value="#303030"/><Setter Property="Padding" Value="7,5"/></Style>
+  </Window.Resources>
+
+  <Grid>
+    <Grid.RowDefinitions><RowDefinition Height="76"/><RowDefinition Height="*"/><RowDefinition Height="42"/></Grid.RowDefinitions>
+    <Border Background="#202020" BorderBrush="#343434" BorderThickness="0,0,0,1" Padding="20,8">
+      <DockPanel><Image Source="/Assets/network-admin-logo-v3.png" Width="54" Height="54" DockPanel.Dock="Left" Margin="0,0,12,0"/><StackPanel VerticalAlignment="Center"><TextBlock FontFamily="Bahnschrift SemiCondensed" FontSize="24" FontWeight="SemiBold"><Run Text="CORE"/><Run Text="OPS" Foreground="#78DDD7"/><Run Text="  DELL UPDATES" Foreground="#BDBDBD" FontSize="17"/></TextBlock><TextBlock Text="Scan first, review the result, then explicitly approve installation." Foreground="#AFAFAF" FontSize="11"/></StackPanel></DockPanel>
+    </Border>
+
+    <Grid Grid.Row="1" Margin="16">
+      <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="10"/><RowDefinition Height="Auto"/><RowDefinition Height="10"/><RowDefinition Height="*"/><RowDefinition Height="10"/><RowDefinition Height="76"/></Grid.RowDefinitions>
+      <Border Background="#202020" BorderBrush="#414141" BorderThickness="1" CornerRadius="7" Padding="14">
+        <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><StackPanel><TextBlock Text="Target computers" FontWeight="SemiBold" Margin="0,0,0,6"/><TextBox x:Name="TargetsTextBox" Height="64" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" ToolTip="Enter DNS or NetBIOS names separated by commas, spaces, or new lines"/></StackPanel><Button Grid.Column="1" Content="Select from domain…" Margin="10,23,0,0" VerticalAlignment="Top" Click="SelectDomainButton_Click"/></Grid>
+      </Border>
+      <Grid Grid.Row="2"><StackPanel Orientation="Horizontal"><Button x:Name="ScanButton" Content="Scan for updates" Background="#315C59" BorderBrush="#72DAD4" Click="ScanButton_Click"/><Button x:Name="InstallButton" Content="Install applicable updates…" Background="#403536" BorderBrush="#76595C" Click="InstallButton_Click"/><Button x:Name="CancelButton" Content="Cancel" IsEnabled="False" Click="CancelButton_Click"/></StackPanel><TextBlock Text="Reboots are never automatic" Foreground="#AFAFAF" HorizontalAlignment="Right" VerticalAlignment="Center"/></Grid>
+      <DataGrid x:Name="ResultsGrid" Grid.Row="4" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" AlternationCount="2" SelectionMode="Single" SelectionUnit="FullRow">
+        <DataGrid.Columns><DataGridTextColumn Header="Computer" Binding="{Binding ComputerName}" Width="135"/><DataGridTextColumn Header="State" Binding="{Binding State}" Width="140"/><DataGridTextColumn Header="DCU version" Binding="{Binding Version}" Width="120"/><DataGridTextColumn Header="Updates" Binding="{Binding UpdateCountDisplay}" Width="75"/><DataGridTextColumn Header="Reboot" Binding="{Binding RebootDisplay}" Width="80"/><DataGridTextColumn Header="Details" Binding="{Binding Message}" Width="*"/></DataGrid.Columns>
+      </DataGrid>
+      <TextBox x:Name="LogTextBox" Grid.Row="6" IsReadOnly="True" FontFamily="Consolas" FontSize="10.5" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
+    </Grid>
+    <Border Grid.Row="2" Background="#202020" BorderBrush="#343434" BorderThickness="0,1,0,0" Padding="18,0"><Grid><TextBlock x:Name="StatusTextBlock" Text="Ready" Foreground="#BEBEBE" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/><ProgressBar x:Name="ProgressBar" Width="190" Height="4" HorizontalAlignment="Right" IsIndeterminate="True" Visibility="Collapsed" Foreground="#A7E7E3" Background="#303030"/></Grid></Border>
+  </Grid>
+</Window>

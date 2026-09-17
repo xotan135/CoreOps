@@ -1,6 +1,6 @@
 # CoreOps
 
-Current release: **0.10.1**
+Current release: **0.11.2**
 
 ## Versioning
 
@@ -18,6 +18,10 @@ A Windows WPF administration console written in C#. The app supports manual or A
 Inventory collection updates existing computer rows in the `Client Systems` or `Servers` worksheet of the `.xlsm` workbook selected by the operator. It matches the `Name` column case-insensitively, preserves macros and business-maintained columns, and does not silently add unknown computers. Microsoft Excel is not required. The workbook must be writable and should not be open by another user during an update.
 
 The inventory workbook path and protected-computer list are local preferences stored in `%LOCALAPPDATA%\CoreOps\settings.json`; they are not transmitted to the project maintainers.
+
+CoreOps windows are resizable and remember their last normal size, position, and maximized state in `%LOCALAPPDATA%\CoreOps\window-placement.json`. Saved positions are constrained to the currently available monitor work area when restored, so disconnecting a monitor or changing remote-session resolution does not leave a window inaccessible.
+
+The main console also has draggable pane dividers. The vertical divider changes the relative width of the target-computer and protected-computer lists; the horizontal divider changes the space allocated to inputs and the activity log. These pane sizes are retained in the local CoreOps settings.
 
 ## Run
 
@@ -49,6 +53,12 @@ The Windows LAPS workspace opens from the module navigation in the CoreOps heade
 
 LAPS operations require the Microsoft Windows LAPS PowerShell module, the Active Directory PowerShell module, domain connectivity, and delegated permissions. CoreOps supplies no alternate credentials and cannot bypass Active Directory authorization. Plaintext passwords are kept only in process memory and the Windows clipboard; they are never written to CoreOps logs, reports, or settings.
 
+## Dell Command Update
+
+The Dell updates workspace detects Dell systems and Dell Command Update remotely, scans for applicable updates, and installs updates only after explicit confirmation. CoreOps disables automatic reboot and reports when a restart is required. Installation can include Dell drivers, firmware, and BIOS updates. The remote computer must have Dell Command Update installed, internet or configured catalog access, WinRM connectivity, and sufficient operator permissions.
+
+CoreOps invokes Dell's installed `dcu-cli.exe`; it does not bundle or redistribute Dell Command Update. Scan and installation outcomes are included in the CoreOps audit log. Cancelling CoreOps stops waiting for new work, but a DCU process that has already started remotely may continue to completion.
+
 ## Build
 
 ```powershell
@@ -77,4 +87,4 @@ CoreOps source code and original project artwork are released under the [MIT Lic
 
 ## Next operations
 
-The service boundary in `Services/RemoteManagementService.cs` is ready for Windows Update, Dell Command Update, Group Policy refresh, service control, VNC configuration, and cleanup operations from the original script.
+The service boundary in `Services/RemoteManagementService.cs` is ready for Windows Update, Group Policy refresh, service control, VNC configuration, and cleanup operations from the original script.

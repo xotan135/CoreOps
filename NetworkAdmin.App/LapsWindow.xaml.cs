@@ -20,6 +20,7 @@ public partial class LapsWindow : Window
     public LapsWindow()
     {
         InitializeComponent();
+        WindowSizingService.RememberPlacement(this, "LapsWindow");
         ComputerGrid.ItemsSource = _computers;
         PasswordHistoryGrid.ItemsSource = _passwords;
         LoadAudit();

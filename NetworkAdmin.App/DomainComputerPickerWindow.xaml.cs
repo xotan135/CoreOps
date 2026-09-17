@@ -15,7 +15,11 @@ public partial class DomainComputerPickerWindow : Window
 
     public IReadOnlyList<DomainComputer> SelectedComputers { get; private set; } = [];
 
-    public DomainComputerPickerWindow() => InitializeComponent();
+    public DomainComputerPickerWindow()
+    {
+        InitializeComponent();
+        WindowSizingService.RememberPlacement(this, "DomainComputerPickerWindow");
+    }
 
     private async void Window_Loaded(object sender, RoutedEventArgs e) => await RefreshAsync();
 
