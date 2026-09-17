@@ -72,11 +72,6 @@ The repository pins the required .NET SDK in `global.json`. Tagged releases are 
 
 CoreOps does not include telemetry or collect credentials. See [PRIVACY.md](PRIVACY.md) for the information processed during requested operations and [SECURITY.md](SECURITY.md) for vulnerability reporting and supported versions.
 
-## Code signing policy
-
-Release artifacts must be built by the repository's automated workflow from committed source. Changes from contributors without direct repository access require maintainer review, and each production signing request requires maintainer approval. Signing credentials and private keys must never be stored in the repository.
-
-CoreOps is preparing to apply to SignPath Foundation. Planned provider statement (not yet active): **Free code signing provided by SignPath.io, certificate by SignPath Foundation.** Until acceptance and integration are complete, release artifacts are unsigned and are labeled accordingly.
 
 - Committers and reviewers: [CoreOps contributors](https://github.com/xotan135/CoreOps/graphs/contributors)
 - Approvers: [repository owner](https://github.com/xotan135)
