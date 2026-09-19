@@ -10,12 +10,16 @@ public partial class LapsWindow : Window
 {
     private readonly LapsService _laps = new();
     private readonly LapsAuditService _audit = new();
+    private readonly SettingsService _settings = new();
+    private readonly ModuleReportService _reportService = new();
     private readonly ObservableCollection<LapsComputer> _computers = [];
     private readonly ObservableCollection<LapsPasswordResult> _passwords = [];
+    private readonly ObservableCollection<ModuleSessionEvent> _sessionEvents = [];
     private CancellationTokenSource? _operationCancellation;
     private CancellationTokenSource? _clipboardTimer;
     private string _selectedPassword = "";
     private string _copiedValue = "";
+    private SessionReportWindow? _reportWindow;
 
     public LapsWindow()
     {
@@ -23,6 +27,12 @@ public partial class LapsWindow : Window
         WindowSizingService.RememberPlacement(this, "LapsWindow");
         ComputerGrid.ItemsSource = _computers;
         PasswordHistoryGrid.ItemsSource = _passwords;
+        var settings = _settings.Load();
+        if (settings.LapsSearchPaneRatio is > 0.2 and < 0.7)
+        {
+            LapsSearchColumn.Width = new GridLength(settings.LapsSearchPaneRatio, GridUnitType.Star);
+            LapsDetailColumn.Width = new GridLength(1 - settings.LapsSearchPaneRatio, GridUnitType.Star);
+        }
         LoadAudit();
     }
 
@@ -48,6 +58,7 @@ public partial class LapsWindow : Window
             ComputerGrid.SelectedItem = results.FirstOrDefault();
             StatusTextBlock.Text = results.Count == 0 ? "No computers found." : $"{results.Count} computer(s) found.";
             _audit.Write("Search", "", "Success", $"Query returned {results.Count} result(s)");
+            RecordSession("Search", "", "Success", $"Query returned {results.Count} result(s)");
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -83,6 +94,8 @@ public partial class LapsWindow : Window
             StatusTextBlock.Text = $"Current password and {Math.Max(0, results.Count - 1)} historical password(s) retrieved.";
             _audit.Write("Retrieve password history", computer.Name, "Success",
                 $"Returned current plus {Math.Max(0, results.Count - 1)} historical entries");
+            RecordSession("Retrieve password history", computer.Name, "Success",
+                $"Returned current plus {Math.Max(0, results.Count - 1)} historical entries; no password values recorded");
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -111,6 +124,7 @@ public partial class LapsWindow : Window
         _copiedValue = _selectedPassword;
         StatusTextBlock.Text = "Copied. The clipboard will clear in 30 seconds.";
         _audit.Write("Copy password", SelectedComputer?.Name ?? "", "Success", "Clipboard timeout: 30 seconds");
+        RecordSession("Copy password", SelectedComputer?.Name ?? "", "Success", "Clipboard timeout: 30 seconds; no password value recorded");
         LoadAudit();
         StartClipboardTimer(_copiedValue, SelectedComputer?.Name ?? "");
     }
@@ -140,6 +154,7 @@ public partial class LapsWindow : Window
             _copiedValue = "";
             StatusTextBlock.Text = "Clipboard cleared.";
             _audit.Write("Clear clipboard", computer, "Success", "Automatic 30-second timeout");
+            RecordSession("Clear clipboard", computer, "Success", "Automatic 30-second timeout");
             LoadAudit();
         }
     }
@@ -160,6 +175,7 @@ public partial class LapsWindow : Window
             await _laps.RotateAsync(computer.Name, NewOperationToken());
             StatusTextBlock.Text = "Rotation requested. The new password is not immediate.";
             _audit.Write("Request password rotation", computer.Name, "Success");
+            RecordSession("Request password rotation", computer.Name, "Success", "Expiration requested; no password value recorded");
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -219,15 +235,35 @@ public partial class LapsWindow : Window
         StatusTextBlock.Text = exception.Message;
         var detail = exception.Message.Length > 500 ? exception.Message[..500] : exception.Message;
         _audit.Write(action, computer, "Failed", detail);
+        RecordSession(action, computer, "Failed", detail);
     }
 
     private void LoadAudit() => AuditGrid.ItemsSource = _audit.Read();
+
+    private void ReportButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_reportWindow is null) { _reportWindow = new SessionReportWindow { Owner = this, Title = "CoreOps — LAPS session report" }; _reportWindow.Closed += (_, _) => _reportWindow = null; _reportWindow.Show(); }
+        else _reportWindow.Activate();
+        UpdateReportWindow();
+    }
+
+    private void RecordSession(string action, string computer, string outcome, string detail)
+    {
+        _sessionEvents.Add(new ModuleSessionEvent(DateTime.Now, action, computer, outcome, detail));
+        UpdateReportWindow();
+    }
+
+    private void UpdateReportWindow() => _reportWindow?.ShowReport(_reportService.CreateLaps(_sessionEvents));
 
     private void Window_Closed(object? sender, EventArgs e)
     {
         _operationCancellation?.Cancel();
         _clipboardTimer?.Cancel();
         if (_copiedValue.Length > 0) ClearClipboardIfUnchanged(_copiedValue, SelectedComputer?.Name ?? "");
+        var settings = _settings.Load();
+        var total = LapsSearchColumn.ActualWidth + LapsDetailColumn.ActualWidth;
+        if (total > 0) settings.LapsSearchPaneRatio = LapsSearchColumn.ActualWidth / total;
+        _settings.Save(settings);
         ClearSecret();
     }
 }

@@ -10,9 +10,12 @@ public partial class DcuWindow : Window
 {
     private readonly DcuService _dcu = new();
     private readonly AuditLogService _audit = new();
+    private readonly SettingsService _settings = new();
+    private readonly ModuleReportService _reportService = new();
     private readonly ObservableCollection<DcuResult> _results = [];
     private CancellationTokenSource? _cancellation;
-    private HashSet<string> _scannedInstallTargets = new(StringComparer.OrdinalIgnoreCase);
+    private SessionReportWindow? _reportWindow;
+    private string _reportOperation = "Dell updates";
 
     public DcuWindow(IReadOnlyList<string> initialTargets)
     {
@@ -20,34 +23,28 @@ public partial class DcuWindow : Window
         WindowSizingService.RememberPlacement(this, "DcuWindow");
         TargetsTextBox.Text = string.Join(Environment.NewLine, initialTargets);
         ResultsGrid.ItemsSource = _results;
+        var settings = _settings.Load();
+        if (settings.DcuTranscriptHeight > 0) TranscriptRow.Height = new GridLength(Math.Clamp(settings.DcuTranscriptHeight, 65, 300));
+        if (settings.DcuLogHeight > 0) DcuLogRow.Height = new GridLength(Math.Clamp(settings.DcuLogHeight, 50, 250));
+        Closing += (_, _) => SaveLayout();
         AppendLog("Dell updates are scanned and installed through Dell Command Update on each remote computer.");
     }
 
     private async void ScanButton_Click(object sender, RoutedEventArgs e)
     {
         await RunAsync("Dell update scan", _dcu.ScanAsync);
-        _scannedInstallTargets = _results.Where(result => result.State == "Updates available")
-            .Select(result => result.ComputerName).ToHashSet(StringComparer.OrdinalIgnoreCase);
     }
 
     private async void InstallButton_Click(object sender, RoutedEventArgs e)
     {
         var targets = ParseNames(TargetsTextBox.Text);
         if (targets.Count == 0) { ShowTargetError(); return; }
-        var installTargets = targets.Where(_scannedInstallTargets.Contains).ToList();
-        if (installTargets.Count == 0)
-        {
-            MessageBox.Show(this, "Scan these computers first. Installation is enabled only for computers whose latest scan found applicable updates.",
-                "Scan required", MessageBoxButton.OK, MessageBoxImage.Information);
-            return;
-        }
         var confirmation = MessageBox.Show(this,
-            $"Install all applicable Dell updates on {installTargets.Count} scanned computer(s)?\n\n{string.Join(", ", installTargets)}\n\n" +
-            "This can update drivers, firmware, and BIOS. CoreOps will allow BitLocker suspension when Dell requires it, but will not reboot computers automatically. Scan first and ensure affected users have saved their work.",
+            $"Install all applicable Dell updates on {targets.Count} computer(s)?\n\n{string.Join(", ", targets)}\n\n" +
+            "WARNING: A scan is strongly recommended but is no longer required. This can update drivers, firmware, and BIOS. CoreOps will allow BitLocker suspension when Dell requires it, but will not reboot computers automatically. Ensure affected users have saved their work.",
             "Confirm Dell updates", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
         if (confirmation != MessageBoxResult.Yes) return;
-        await RunAsync("Dell update installation", _dcu.InstallAsync, installTargets);
-        _scannedInstallTargets.Clear();
+        await RunAsync("Dell update installation", _dcu.InstallAsync, targets);
     }
 
     private void CancelButton_Click(object sender, RoutedEventArgs e) => _cancellation?.Cancel();
@@ -65,7 +62,9 @@ public partial class DcuWindow : Window
         var targets = suppliedTargets ?? ParseNames(TargetsTextBox.Text);
         if (targets.Count == 0) { ShowTargetError(); return; }
         SetBusy(true, $"{operation} running on {targets.Count} computer(s)…");
+        _reportOperation = operation;
         _results.Clear();
+        UpdateReportWindow();
         _cancellation = new CancellationTokenSource();
         var token = _cancellation.Token;
         using var gate = new SemaphoreSlim(4);
@@ -78,7 +77,12 @@ public partial class DcuWindow : Window
                 {
                     AppendLog($"{operation}: {target}");
                     var result = await action(target, token);
-                    await Dispatcher.InvokeAsync(() => _results.Add(result));
+                    await Dispatcher.InvokeAsync(() =>
+                    {
+                        _results.Add(result);
+                        ResultsGrid.SelectedItem ??= result;
+                        UpdateReportWindow();
+                    });
                     await _audit.WriteAsync(operation, new ComputerResult { ComputerName=result.ComputerName, State=result.State, Message=result.Message }, CancellationToken.None);
                     AppendLog($"{target}: {result.State} — {result.Message}");
                 }
@@ -101,6 +105,20 @@ public partial class DcuWindow : Window
     }
 
     private void AppendLog(string message) => Dispatcher.Invoke(() => { LogTextBox.AppendText($"[{DateTime.Now:HH:mm:ss}] {message}{Environment.NewLine}"); LogTextBox.ScrollToEnd(); });
+    private void ReportButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_reportWindow is null) { _reportWindow = new SessionReportWindow { Owner = this, Title = "CoreOps — Dell session report" }; _reportWindow.Closed += (_, _) => _reportWindow = null; _reportWindow.Show(); }
+        else _reportWindow.Activate();
+        UpdateReportWindow();
+    }
+    private void UpdateReportWindow() => _reportWindow?.ShowReport(_reportService.CreateDcu(_reportOperation, _results));
+    private void SaveLayout()
+    {
+        var settings = _settings.Load();
+        settings.DcuTranscriptHeight = TranscriptRow.ActualHeight;
+        settings.DcuLogHeight = DcuLogRow.ActualHeight;
+        _settings.Save(settings);
+    }
     private static List<string> ParseNames(string text) => text.Split([',',';',' ','\t','\r','\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Where(name => Regex.IsMatch(name, @"^[A-Za-z0-9][A-Za-z0-9.-]{0,252}$")).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
     private void ShowTargetError() => MessageBox.Show(this, "Enter at least one valid computer name.", "Computer names required", MessageBoxButton.OK, MessageBoxImage.Information);
 }

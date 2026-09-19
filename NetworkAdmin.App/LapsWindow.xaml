@@ -48,6 +48,7 @@
     <Border Background="#202020" BorderBrush="#343434" BorderThickness="0,0,0,1" Padding="24,10">
       <DockPanel>
         <Image Source="/Assets/network-admin-logo-v3.png" Width="58" Height="58" DockPanel.Dock="Left" Margin="0,0,14,0"/>
+        <Button Content="Session report" DockPanel.Dock="Right" Margin="12,0,0,0" VerticalAlignment="Center" Click="ReportButton_Click"/>
         <StackPanel VerticalAlignment="Center">
           <TextBlock FontFamily="Bahnschrift SemiCondensed" FontSize="26" FontWeight="SemiBold"><Run Text="CORE"/><Run Text="OPS" Foreground="#78DDD7"/><Run Text="  WINDOWS LAPS" Foreground="#BDBDBD" FontSize="18"/></TextBlock>
           <TextBlock Text="Passwords remain in memory and are never written to CoreOps logs." Foreground="#9F9F9F" FontSize="12"/>
@@ -58,7 +59,7 @@
     <TabControl Grid.Row="1" Margin="20,15">
       <TabItem Header="Password operations">
         <Grid Margin="16">
-          <Grid.ColumnDefinitions><ColumnDefinition Width="330"/><ColumnDefinition Width="16"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+          <Grid.ColumnDefinitions><ColumnDefinition x:Name="LapsSearchColumn" Width="330" MinWidth="230"/><ColumnDefinition Width="10"/><ColumnDefinition x:Name="LapsDetailColumn" Width="*" MinWidth="360"/></Grid.ColumnDefinitions>
           <Border Background="#202020" BorderBrush="#414141" BorderThickness="1" CornerRadius="8" Padding="14">
             <Grid>
               <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
@@ -69,6 +70,8 @@
               </DataGrid>
             </Grid>
           </Border>
+
+          <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Center" VerticalAlignment="Stretch" Background="#4C4C4C" ResizeDirection="Columns" ResizeBehavior="PreviousAndNext"/>
 
           <Border Grid.Column="2" Background="#202020" BorderBrush="#414141" BorderThickness="1" CornerRadius="8" Padding="20">
             <Grid>

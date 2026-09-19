@@ -19,8 +19,15 @@ public sealed class DcuService
     {
         var script = $$"""
             $ErrorActionPreference = 'Stop'
-            $result = Invoke-Command -ComputerName '{{computerName}}' -ArgumentList '{{operation}}' -ScriptBlock {
+            try {
+            $result = Invoke-Command -ComputerName '{{computerName}}' -Authentication Kerberos -ErrorAction Stop -ArgumentList '{{operation}}' -ScriptBlock {
                 param($Operation)
+                $identity = [Security.Principal.WindowsIdentity]::GetCurrent().Name
+                $principal = [Security.Principal.WindowsPrincipal]::new([Security.Principal.WindowsIdentity]::GetCurrent())
+                $isAdmin = $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+                if (-not $isAdmin) {
+                    return [pscustomobject]@{ State='Remote not elevated'; Version=''; UpdateCount=$null; Updates=''; RebootRequired=$false; ExitCode=4; Message="The WinRM session for $identity does not have a local Administrator token on this computer. Verify local Administrators membership and remote UAC/GPO policy." }
+                }
                 $manufacturer = [string](Get-CimInstance Win32_ComputerSystem).Manufacturer
                 if ($manufacturer -notmatch 'Dell') {
                     return [pscustomobject]@{ State='Not a Dell'; Version=''; UpdateCount=$null; Updates=''; RebootRequired=$false; ExitCode=3; Message="Manufacturer is $manufacturer" }
@@ -35,58 +42,75 @@ public sealed class DcuService
                 }
 
                 $version = [string](Get-Item $cli).VersionInfo.ProductVersion
-                $report = Join-Path $env:TEMP "CoreOps-DCU-$([guid]::NewGuid().ToString('N')).xml"
-                try {
+                $managementService = Get-Service -Name 'DellClientManagementService' -ErrorAction SilentlyContinue
+                $serviceDescription = if ($managementService) { "Dell Client Management Service is $($managementService.Status)" } else { 'Dell Client Management Service was not found' }
                     if ($Operation -eq 'Scan') {
-                        $arguments = @('/scan', '-silent', "-report=$report")
+                        $arguments = @('/scan')
                     } else {
-                        $arguments = @('/applyUpdates', '-silent', '-reboot=disable', '-autoSuspendBitLocker=enable')
+                        $arguments = @('/applyUpdates', '-forceupdate=enable', '-reboot=disable', '-autoSuspendBitLocker=enable')
                     }
-                    $process = Start-Process -FilePath $cli -ArgumentList $arguments -Wait -PassThru -WindowStyle Hidden
-                    $code = $process.ExitCode
+                    try {
+                        $dcuOutput = (& $cli @arguments 2>&1 | Out-String).Trim()
+                        $code = $LASTEXITCODE
+                    } catch {
+                        return [pscustomobject]@{
+                            State='DCU launch denied'; Version=$version; UpdateCount=$null; Updates='';
+                            RebootRequired=$false; ExitCode=$null;
+                            Message="Windows could not launch DCU as $identity from $cli. $($_.Exception.Message)"
+                        }
+                    }
+                    if ($null -eq $code) {
+                        return [pscustomobject]@{ State='DCU launch failed'; Version=$version; UpdateCount=$null; Updates=''; RebootRequired=$false; ExitCode=$null; Message="DCU did not provide an exit code. $dcuOutput" }
+                    }
                     $count = $null
-                    $updates = ''
-                    if ($Operation -eq 'Scan' -and (Test-Path $report)) {
-                        try {
-                            [xml]$xml = Get-Content -LiteralPath $report -Raw
-                            $nodes = @($xml.SelectNodes("//*[translate(local-name(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')='update']"))
-                            $count = $nodes.Count
-                            $updates = ($nodes | ForEach-Object {
-                                $name = $_.name
-                                if (-not $name) { $name = $_.GetAttribute('name') }
-                                if (-not $name) { $name = $_.title }
-                                if ($name) { [string]$name }
-                            } | Select-Object -Unique) -join '; '
-                        } catch { }
+                    $updates = if ([string]::IsNullOrWhiteSpace($dcuOutput)) { 'DCU produced no console transcript.' } else { $dcuOutput }
+                    if ($Operation -eq 'Scan') {
+                        $countMatch = [regex]::Match($dcuOutput, 'Number of applicable updates[^:]*:\s*(\d+)', 'IgnoreCase')
+                        if ($countMatch.Success) { $count = [int]$countMatch.Groups[1].Value }
                     }
-
                     $reboot = $code -in 1,5
                     if ($Operation -eq 'Scan') {
                         if ($code -eq 500) { $state='Up to date'; $count=0; $message='No applicable Dell updates were found.' }
                         elseif ($code -eq 0) { $state='Updates available'; $message=if ($count -gt 0) { "$count applicable update(s) found." } else { 'Scan completed; Dell reported applicable update information.' } }
-                        elseif ($code -eq 4) { $state='Access denied'; $message='Dell Command Update requires administrative privileges on the remote computer.' }
+                        elseif ($code -eq 4) { $state='DCU privilege rejected'; $message="DCU returned code 4 even though WinRM reports an Administrator token for $identity. $serviceDescription. Test dcu-cli.exe /scan from an elevated console on the target." }
                         elseif ($code -eq 5) { $state='Pending reboot'; $reboot=$true; $message='A reboot from a previous operation is pending.' }
                         elseif ($code -eq 6) { $state='DCU busy'; $message='Another Dell Command Update instance is running.' }
                         elseif ($code -eq 7) { $state='Unsupported model'; $message='Dell Command Update does not support this system model.' }
+                        elseif ($code -eq 107) { $state='Invalid DCU option'; $message="DCU rejected an option value. $dcuOutput" }
                         elseif ($code -eq 503) { $state='Download failed'; $message='DCU could not download scan data. Check network and catalog access.' }
+                        elseif ($code -eq 3000) { $state='DCU service stopped'; $message='Dell Client Management Service is not running.' }
+                        elseif ($code -eq 3001) { $state='DCU service missing'; $message='Dell Client Management Service is not installed.' }
+                        elseif ($code -eq 3002) { $state='DCU service disabled'; $message='Dell Client Management Service is disabled.' }
+                        elseif ($code -in 3003,3004,3005) { $state='DCU service busy'; $message="Dell Client Management Service is busy (code $code). Retry after its current operation finishes." }
                         else { $state='Scan failed'; $message="Dell Command Update scan returned code $code." }
                     } else {
                         if ($code -eq 0) { $state='Installed'; $message='Applicable Dell updates were installed. No reboot was requested by DCU.' }
                         elseif ($code -eq 1) { $state='Reboot required'; $message='Updates installed; a reboot is required. CoreOps did not restart the computer.' }
                         elseif ($code -eq 500) { $state='Up to date'; $message='No applicable Dell updates were found.' }
-                        elseif ($code -eq 4) { $state='Access denied'; $message='Dell Command Update requires administrative privileges on the remote computer.' }
+                        elseif ($code -eq 4) { $state='DCU privilege rejected'; $message="DCU returned code 4 even though WinRM reports an Administrator token for $identity. $serviceDescription. Test dcu-cli.exe /applyUpdates from an elevated console on the target." }
                         elseif ($code -eq 5) { $state='Pending reboot'; $reboot=$true; $message='A reboot from a previous operation is pending.' }
                         elseif ($code -eq 6) { $state='DCU busy'; $message='Another Dell Command Update instance is running.' }
                         elseif ($code -eq 7) { $state='Unsupported model'; $message='Dell Command Update does not support this system model.' }
                         elseif ($code -eq 1002) { $state='Download failed'; $message='DCU could not download one or more updates. Check network and catalog access.' }
+                        elseif ($code -eq 3000) { $state='DCU service stopped'; $message='Dell Client Management Service is not running.' }
+                        elseif ($code -eq 3001) { $state='DCU service missing'; $message='Dell Client Management Service is not installed.' }
+                        elseif ($code -eq 3002) { $state='DCU service disabled'; $message='Dell Client Management Service is disabled.' }
+                        elseif ($code -in 3003,3004,3005) { $state='DCU service busy'; $message="Dell Client Management Service is busy (code $code). Retry after its current operation finishes." }
                         else { $state='Install failed'; $message="Dell Command Update installation returned code $code." }
                     }
                     [pscustomobject]@{ State=$state; Version=$version; UpdateCount=$count; Updates=$updates; RebootRequired=$reboot; ExitCode=$code; Message=$message }
-                } finally {
-                    Remove-Item -LiteralPath $report -Force -ErrorAction SilentlyContinue
+            }
+            } catch {
+                $failureMessage = [string]$_.Exception.Message
+                $failureId = [string]$_.FullyQualifiedErrorId
+                $failureCategory = [string]$_.CategoryInfo.Category
+                $failureState = if ($failureCategory -match 'PermissionDenied|SecurityError' -or $failureMessage -match 'denied|unauthorized') { 'WinRM access denied' } else { 'Remote command failed' }
+                $result = [pscustomobject]@{
+                    State=$failureState; Version=''; UpdateCount=$null; Updates=''; RebootRequired=$false; ExitCode=$null;
+                    Message="$failureMessage [Category: $failureCategory; Error: $failureId]"
                 }
             }
-            $result | ConvertTo-Json -Compress
+            $result | Select-Object State,Version,UpdateCount,Updates,RebootRequired,ExitCode,Message | ConvertTo-Json -Compress
             """;
 
         var encoded = Convert.ToBase64String(Encoding.Unicode.GetBytes(script));
@@ -120,8 +144,10 @@ public sealed class DcuService
 
     private static DcuResult Failure(string computerName, string message)
     {
-        var clean = message.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()?.Trim() ?? "The remote command failed.";
-        var state = Regex.IsMatch(clean, "access is denied|unauthorized", RegexOptions.IgnoreCase) ? "Access denied" :
+        var lines = message.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var clean = lines.FirstOrDefault(line => !line.StartsWith("System.Management.Automation.", StringComparison.OrdinalIgnoreCase))
+            ?? lines.FirstOrDefault() ?? "The remote command failed.";
+        var state = Regex.IsMatch(clean, "access is denied|unauthorized|\\bdenied\\b", RegexOptions.IgnoreCase) ? "Access denied" :
             Regex.IsMatch(clean, "WinRM|WS-Management|cannot connect|unreachable|timed out", RegexOptions.IgnoreCase) ? "WinRM unavailable" : "Command failed";
         return new DcuResult { ComputerName=computerName, State=state, Message=clean };
     }
@@ -133,9 +159,10 @@ public sealed class DcuService
         try
         {
             var document = XDocument.Parse(value[value.IndexOf('<')..]);
-            return string.Join(Environment.NewLine, document.Descendants().Where(e => e.Name.LocalName == "S" && string.Equals((string?)e.Attribute("S"), "Error", StringComparison.OrdinalIgnoreCase)).Select(e => e.Value));
+            value = string.Join(Environment.NewLine, document.Descendants().Where(e => e.Name.LocalName == "S" && string.Equals((string?)e.Attribute("S"), "Error", StringComparison.OrdinalIgnoreCase)).Select(e => e.Value));
         }
-        catch { return Regex.Replace(value.Replace("#< CLIXML", "", StringComparison.OrdinalIgnoreCase), "<[^>]+>", " ").Trim(); }
+        catch { value = Regex.Replace(value.Replace("#< CLIXML", "", StringComparison.OrdinalIgnoreCase), "<[^>]+>", " "); }
+        return Regex.Replace(value, "_x([0-9A-Fa-f]{4})_", match => char.ConvertFromUtf32(Convert.ToInt32(match.Groups[1].Value, 16))).Trim();
     }
 
     private sealed class DcuPayload

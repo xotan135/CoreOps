@@ -1,6 +1,6 @@
 # CoreOps
 
-Current release: **0.11.2**
+Current release: **0.12.1**
 
 ## Versioning
 
@@ -58,6 +58,8 @@ LAPS operations require the Microsoft Windows LAPS PowerShell module, the Active
 The Dell updates workspace detects Dell systems and Dell Command Update remotely, scans for applicable updates, and installs updates only after explicit confirmation. CoreOps disables automatic reboot and reports when a restart is required. Installation can include Dell drivers, firmware, and BIOS updates. The remote computer must have Dell Command Update installed, internet or configured catalog access, WinRM connectivity, and sufficient operator permissions.
 
 CoreOps invokes Dell's installed `dcu-cli.exe`; it does not bundle or redistribute Dell Command Update. Scan and installation outcomes are included in the CoreOps audit log. Cancelling CoreOps stops waiting for new work, but a DCU process that has already started remotely may continue to completion.
+
+Dell scans capture DCU console output in memory without creating remote report files. Installation does not require a prior scan, but CoreOps displays a prominent warning because scanning first is the recommended workflow. Dell and LAPS workspaces provide live, in-memory session reports; LAPS session reports contain actions and outcomes only and never include password values.
 
 ## Build
 

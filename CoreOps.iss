@@ -3,7 +3,7 @@
 ; Non-commercial use only.
 
 #define MyAppName "CoreOps"
-#define MyAppVersion "0.6.0"
+#define MyAppVersion "0.12.1"
 #define MyAppPublisher "CoreOps Project"
 #define MyAppExeName "CoreOps.exe"
 #define DoubleAmp(Value) StringChange(Value, "&", "&&")
@@ -20,11 +20,11 @@ AppPublisher={#MyAppPublisher}
 AppPublisherURL=https://github.com/xotan135/CoreOps
 AppSupportURL=https://github.com/xotan135/CoreOps/issues
 AppUpdatesURL=https://github.com/xotan135/CoreOps/releases
-VersionInfoVersion=0.0.10.1
+VersionInfoVersion=0.0.12.1
 VersionInfoCompany=Scrape Consulting
 VersionInfoDescription=CoreOps Network Administration Console
 VersionInfoProductName=CoreOps
-VersionInfoProductVersion=0.10.1
+VersionInfoProductVersion=0.12.1
 UsePreviousAppDir=yes
 CloseApplications=yes
 RestartApplications=no
@@ -41,7 +41,7 @@ DisableProgramGroupPage=yes
 ; Uncomment the following line to run in non administrative install mode (install for current user only).
 ;PrivilegesRequired=lowest
 OutputDir=release
-OutputBaseFilename=CoreOps-Setup-0.10.1-x64
+OutputBaseFilename=CoreOps-Setup-0.12.1-x64
 SetupIconFile=NetworkAdmin.App\Assets\CoreOps.ico
 LicenseFile=LICENSE
 SolidCompression=yes

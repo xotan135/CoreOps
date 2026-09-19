@@ -2,6 +2,35 @@
 
 CoreOps uses semantic versioning while it is under active development.
 
+## 0.12.1 — 2026-09-18
+
+### Changed
+
+- Changed workflow to more reliable workflow.
+### Fixed
+
+- Dell session reports now use Dell-specific in-memory transcript text instead of the LAPS password disclaimer.
+
+## 0.12.0 — 2026-09-18
+
+### Added
+
+- In-memory Dell Updates and Windows LAPS session-report windows; LAPS reports never contain password values.
+- Draggable, remembered internal pane sizing in the Dell Updates and Windows LAPS workspaces.
+
+### Changed
+
+- Dell installation no longer requires a prior scan, but presents a prominent warning that scanning first is strongly recommended.
+
+
+## 0.11.12 — 2026-09-18
+
+### Changed
+
+- Dell scans now capture DCU's console transcript directly in memory and display it in the selected-computer panel.
+- Removed XML report creation, filesystem parsing, ownership changes, and ACL manipulation from Dell scans.
+
+
 ## 0.11.2 — 2026-09-16
 
 ### Added
