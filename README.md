@@ -1,6 +1,6 @@
 # CoreOps
 
-Current release: **0.13.1**
+Current release: **0.14.0**
 
 ## Versioning
 
@@ -21,7 +21,7 @@ The inventory workbook path and protected-computer list are local preferences st
 
 CoreOps windows are resizable and remember their last normal size, position, and maximized state in `%LOCALAPPDATA%\CoreOps\window-placement.json`. Saved positions are constrained to the currently available monitor work area when restored, so disconnecting a monitor or changing remote-session resolution does not leave a window inaccessible.
 
-The main console also has draggable pane dividers. The vertical divider changes the relative width of the target-computer and protected-computer lists; the horizontal divider changes the space allocated to inputs and the activity log. These pane sizes are retained in the local CoreOps settings.
+The main console has a draggable horizontal divider that changes the space allocated to inputs and the activity log. The protected-computer list opens in its own resizable editor window. These layout preferences are retained locally.
 
 ## Run
 
@@ -61,6 +61,12 @@ CoreOps invokes Dell's installed `dcu-cli.exe`; it does not bundle or redistribu
 
 Dell scans capture DCU console output in memory without creating remote report files. Installation does not require a prior scan, but CoreOps displays a prominent warning because scanning first is the recommended workflow. Dell and LAPS workspaces provide live, in-memory session reports; LAPS session reports contain actions and outcomes only and never include password values.
 
+## Remote maintenance
+
+The Maintenance workspace checks the status of an exact Windows service name and can start, stop, or restart that service across up to four target computers in parallel. Stop and restart operations require confirmation. Results are written to the standard audit log and can be viewed in an in-memory session report.
+
+Temporary-file cleanup can be previewed before it runs. It is limited to `C:\Windows\Temp` and each local profile's `AppData\Local\Temp`, considers only files older than the selected age, skips reparse points, and never deletes the temp root folders. Cleanup requires confirmation and reports files deleted, space recovered, and files that were inaccessible or in use.
+
 ## Build
 
 ```powershell
@@ -84,4 +90,4 @@ CoreOps source code and original project artwork are released under the [MIT Lic
 
 ## Next operations
 
-The service boundary in `Services/RemoteManagementService.cs` is ready for Windows Update, service control, VNC configuration, and temporary-file cleanup operations from the original script. Group Policy refresh is available from the main window.
+The service boundary in `Services/RemoteManagementService.cs` is ready for Windows Update and VNC configuration operations from the original script. Group Policy refresh is available from the main window; Windows service management and temporary-file cleanup are available from Remote Maintenance.

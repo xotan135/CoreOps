@@ -93,6 +93,100 @@ public sealed class RemoteManagementService
         return await ExecuteAsync(computerName, script, token);
     }
 
+    public Task<ComputerResult> GetServiceStatusAsync(string computerName, string serviceName, CancellationToken token) =>
+        ManageServiceAsync(computerName, serviceName, "Query", token);
+
+    public async Task<ComputerResult> ManageServiceAsync(string computerName, string serviceName, string action,
+        CancellationToken token)
+    {
+        var escapedService = serviceName.Replace("'", "''", StringComparison.Ordinal);
+        var escapedAction = action.Replace("'", "''", StringComparison.Ordinal);
+        var script = $$"""
+            $ErrorActionPreference = 'Stop'
+            $data = Invoke-Command -ComputerName '{{computerName}}' -ScriptBlock {
+                param($serviceName, $action)
+                $service = Get-Service -Name $serviceName -ErrorAction Stop
+                switch ($action) {
+                    'Start'   { Start-Service -InputObject $service -ErrorAction Stop; $service.WaitForStatus('Running', [TimeSpan]::FromSeconds(30)) }
+                    'Stop'    { Stop-Service -InputObject $service -ErrorAction Stop; $service.WaitForStatus('Stopped', [TimeSpan]::FromSeconds(30)) }
+                    'Restart' { Restart-Service -InputObject $service -ErrorAction Stop; $service.WaitForStatus('Running', [TimeSpan]::FromSeconds(45)) }
+                }
+                $service.Refresh()
+                $configuration = Get-CimInstance Win32_Service -Filter "Name='$($service.Name.Replace("'", "''"))'" -ErrorAction SilentlyContinue
+                [pscustomobject]@{
+                    State = [string]$service.Status
+                    Message = "$($service.DisplayName) ($($service.Name)); startup: $($configuration.StartMode)"
+                }
+            } -ArgumentList '{{escapedService}}', '{{escapedAction}}'
+            $data | ConvertTo-Json -Compress
+            """;
+        return await ExecuteAsync(computerName, script, token);
+    }
+
+    public async Task<ComputerResult> PreviewTempCleanupAsync(string computerName, int minimumAgeDays,
+        CancellationToken token) => await RunTempCleanupAsync(computerName, minimumAgeDays, false, token);
+
+    public async Task<ComputerResult> CleanTempFilesAsync(string computerName, int minimumAgeDays,
+        CancellationToken token) => await RunTempCleanupAsync(computerName, minimumAgeDays, true, token);
+
+    private async Task<ComputerResult> RunTempCleanupAsync(string computerName, int minimumAgeDays, bool delete,
+        CancellationToken token)
+    {
+        var safeDays = Math.Clamp(minimumAgeDays, 1, 365);
+        var deleteLiteral = delete ? "$true" : "$false";
+        var script = $$"""
+            $ErrorActionPreference = 'Stop'
+            $data = Invoke-Command -ComputerName '{{computerName}}' -ScriptBlock {
+                param($minimumAgeDays, $delete)
+                $cutoff = (Get-Date).AddDays(-[int]$minimumAgeDays)
+                $roots = [System.Collections.Generic.List[string]]::new()
+                $windowsTemp = Join-Path $env:windir 'Temp'
+                if (Test-Path -LiteralPath $windowsTemp -PathType Container) { $roots.Add($windowsTemp) }
+                Get-ChildItem -LiteralPath (Join-Path $env:SystemDrive 'Users') -Directory -Force -ErrorAction SilentlyContinue |
+                    Where-Object { -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint) } |
+                    ForEach-Object {
+                        $userTemp = Join-Path $_.FullName 'AppData\Local\Temp'
+                        if (Test-Path -LiteralPath $userTemp -PathType Container) { $roots.Add($userTemp) }
+                    }
+
+                $files = foreach ($root in $roots | Select-Object -Unique) {
+                    Get-ChildItem -LiteralPath $root -File -Recurse -Force -ErrorAction SilentlyContinue |
+                        Where-Object { $_.LastWriteTime -lt $cutoff -and -not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint) }
+                }
+                $files = @($files)
+                $bytes = [long](($files | Measure-Object Length -Sum).Sum)
+                if (-not $delete) {
+                    [pscustomobject]@{
+                        State = 'Preview'
+                        Message = "Eligible: $($files.Count) file(s), $([math]::Round($bytes / 1MB, 2)) MB in $($roots.Count) temp location(s); older than $minimumAgeDays day(s)"
+                    }
+                    return
+                }
+
+                $deleted = 0; $failed = 0; $freed = [long]0
+                foreach ($file in $files) {
+                    try { Remove-Item -LiteralPath $file.FullName -Force -ErrorAction Stop; $deleted++; $freed += $file.Length }
+                    catch { $failed++ }
+                }
+                foreach ($root in $roots | Select-Object -Unique) {
+                    Get-ChildItem -LiteralPath $root -Directory -Recurse -Force -ErrorAction SilentlyContinue |
+                        Sort-Object FullName -Descending | ForEach-Object {
+                            if (-not ($_.Attributes -band [IO.FileAttributes]::ReparsePoint) -and
+                                -not (Get-ChildItem -LiteralPath $_.FullName -Force -ErrorAction SilentlyContinue | Select-Object -First 1)) {
+                                Remove-Item -LiteralPath $_.FullName -Force -ErrorAction SilentlyContinue
+                            }
+                        }
+                }
+                [pscustomobject]@{
+                    State = if ($failed -eq 0) { 'Cleaned' } else { 'Completed with skips' }
+                    Message = "Deleted: $deleted file(s), $([math]::Round($freed / 1MB, 2)) MB; failed/in use: $failed"
+                }
+            } -ArgumentList {{safeDays}}, {{deleteLiteral}}
+            $data | ConvertTo-Json -Compress
+            """;
+        return await ExecuteAsync(computerName, script, token);
+    }
+
     private static async Task<ComputerResult> ExecuteAsync(string computerName, string script, CancellationToken token)
     {
         var encoded = Convert.ToBase64String(Encoding.Unicode.GetBytes(script));
@@ -152,6 +246,8 @@ public sealed class RemoteManagementService
 
     private static string CategorizeFailure(string computerName, string message)
     {
+        if (Regex.IsMatch(message, "cannot find any service with service name|no service was found", RegexOptions.IgnoreCase))
+            return "Service not found";
         if (Regex.IsMatch(message, "access is denied|unauthorized|0x80070005|authentication failed", RegexOptions.IgnoreCase))
             return "Access denied";
         try { _ = Dns.GetHostAddresses(computerName); }

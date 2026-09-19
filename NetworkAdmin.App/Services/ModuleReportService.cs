@@ -31,6 +31,18 @@ public sealed class ModuleReportService
             "This report exists only in memory while the report window is open. LAPS passwords are never included.");
     }
 
+    public string CreateMaintenance(string operation, IEnumerable<MaintenanceResult> source)
+    {
+        var rows = source.ToList();
+        var body = new StringBuilder();
+        foreach (var item in rows)
+            body.Append("<tr>").Append(Cell(item.ComputerName)).Append(Cell(item.State))
+                .Append(Cell(item.Item)).Append(Cell(item.Message)).Append("</tr>");
+        return Page("Maintenance", operation, rows.Count,
+            "<th>Computer</th><th>State</th><th>Service / scope</th><th>Details</th>", body.ToString(),
+            "This report exists only in memory while the report window is open.");
+    }
+
     private static string Page(string module, string subtitle, int count, string headers, string body, string footer) => $$"""
         <!doctype html><html><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><style>
         body{font-family:'Segoe UI',Arial,sans-serif;background:#151515;color:#ededed;margin:0;padding:24px}h1{margin:0}.accent{color:#78ddd7}.sub{color:#aaa;margin:5px 0 18px}.metric{display:inline-block;background:#252525;border:1px solid #414141;border-radius:14px;padding:6px 11px;margin-bottom:15px}table{width:100%;border-collapse:collapse;background:#1b1b1b;border:1px solid #3d3d3d}th{background:#303030;text-align:left;padding:9px}td{padding:8px;border-bottom:1px solid #303030;vertical-align:top}tr:nth-child(even){background:#222}pre{white-space:pre-wrap;margin:0;font-family:Consolas,monospace}.empty{padding:25px;border:1px solid #3d3d3d;color:#aaa}.foot{margin-top:14px;color:#888;font-size:12px}

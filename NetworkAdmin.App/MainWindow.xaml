@@ -128,7 +128,7 @@
                                VerticalAlignment="Center"/>
                     <Border Background="#292929" BorderBrush="#454545" BorderThickness="1"
                             CornerRadius="8" Padding="7,2" Margin="11,0,0,0">
-                        <TextBlock x:Name="AppVersionTextBlock" Text="v0.13.1" FontFamily="Consolas"
+                        <TextBlock x:Name="AppVersionTextBlock" Text="v0.14.0" FontFamily="Consolas"
                                    FontSize="9" Foreground="#BEBEBE"/>
                     </Border>
                 </StackPanel>
@@ -140,6 +140,7 @@
                     </Border>
                     <Button Content="Windows LAPS" Margin="8,0,0,0" Padding="11,6" Click="OpenLapsButton_Click"/>
                     <Button Content="Dell updates" Margin="8,0,0,0" Padding="11,6" Click="OpenDcuButton_Click"/>
+                    <Button Content="Maintenance" Margin="8,0,0,0" Padding="11,6" Click="OpenMaintenanceButton_Click"/>
                 </StackPanel>
                 <Border Background="#202020" BorderBrush="#3D3D3D" BorderThickness="1" CornerRadius="13" Padding="11,6" Margin="0,7,0,0" MaxWidth="390">
                     <StackPanel Orientation="Horizontal">

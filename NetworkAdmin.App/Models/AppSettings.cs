@@ -9,4 +9,5 @@ public sealed class AppSettings
     public double DcuTranscriptHeight { get; set; }
     public double DcuLogHeight { get; set; }
     public double LapsSearchPaneRatio { get; set; }
+    public double MaintenanceLogHeight { get; set; }
 }

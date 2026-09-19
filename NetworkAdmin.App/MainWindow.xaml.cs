@@ -21,6 +21,7 @@ public partial class MainWindow : Window
     private SessionReportWindow? _reportWindow;
     private LapsWindow? _lapsWindow;
     private DcuWindow? _dcuWindow;
+    private MaintenanceWindow? _maintenanceWindow;
     private List<string> _protectedComputers = [];
     private string _reportOperation = "Current session";
 
@@ -156,6 +157,20 @@ public partial class MainWindow : Window
             .OrderBy(name => name, StringComparer.OrdinalIgnoreCase).ToList();
         SaveSettings();
         AppendLog($"Protected-computer list updated: {_protectedComputers.Count} computer(s). ");
+    }
+
+    private void OpenMaintenanceButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_maintenanceWindow is null)
+        {
+            _maintenanceWindow = new MaintenanceWindow(ParseNames(ComputerNamesTextBox.Text)) { Owner = this };
+            _maintenanceWindow.Closed += (_, _) => _maintenanceWindow = null;
+            _maintenanceWindow.Show();
+        }
+        else
+        {
+            _maintenanceWindow.Activate();
+        }
     }
 
     private async void GpUpdateButton_Click(object sender, RoutedEventArgs e) =>

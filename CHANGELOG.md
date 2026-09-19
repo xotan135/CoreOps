@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.14.0 — 2026-09-18
+
+### Added
+
+- Remote Windows service status, start, stop, and restart operations
+- Temporary-file cleanup preview and confirmed cleanup for Windows Temp and local profile Temp folders
+- Selectable minimum file age, per-computer results, audit entries, cancellation, and in-memory maintenance session reports
+- Dedicated resizable Remote Maintenance window with remembered placement and adjustable activity-log height
+
 ## 0.13.1 — 2026-09-18
 
 ### Added
@@ -215,5 +224,4 @@ First tracked pre-release.
 
 - Windows Update operations
 - VNC configuration deployment
-- Temporary-file cleanup
 - Settings interface and release hardening
