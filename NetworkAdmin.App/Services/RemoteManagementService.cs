@@ -76,6 +76,23 @@ public sealed class RemoteManagementService
         return await ExecuteAsync(computerName, script, token);
     }
 
+    public async Task<ComputerResult> GpUpdateAsync(string computerName, CancellationToken token)
+    {
+        var script = $$"""
+            $ErrorActionPreference = 'Stop'
+            $result = Invoke-Command -ComputerName '{{computerName}}' -ScriptBlock {
+                $output = & gpupdate.exe /force 2>&1 | Out-String
+                if ($LASTEXITCODE -ne 0) { throw $output.Trim() }
+                $output.Trim()
+            }
+            [pscustomobject]@{
+                State = 'Updated'
+                Message = if ($result) { ($result | Out-String).Trim() } else { 'Group Policy refresh completed' }
+            } | ConvertTo-Json -Compress
+            """;
+        return await ExecuteAsync(computerName, script, token);
+    }
+
     private static async Task<ComputerResult> ExecuteAsync(string computerName, string script, CancellationToken token)
     {
         var encoded = Convert.ToBase64String(Encoding.Unicode.GetBytes(script));

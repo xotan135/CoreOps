@@ -1,6 +1,6 @@
 # CoreOps
 
-Current release: **0.12.1**
+Current release: **0.13.1**
 
 ## Versioning
 
@@ -15,7 +15,7 @@ A Windows WPF administration console written in C#. The app supports manual or A
 
 
 
-Inventory collection updates existing computer rows in the `Client Systems` or `Servers` worksheet of the `.xlsm` workbook selected by the operator. It matches the `Name` column case-insensitively, preserves macros and business-maintained columns, and does not silently add unknown computers. Microsoft Excel is not required. The workbook must be writable and should not be open by another user during an update.
+Inventory collection updates existing computer rows in the `Client Systems` or `Servers` worksheet of the `.xlsx` or `.xlsm` workbook selected by the operator. It matches the `Name` column case-insensitively, preserves macros in `.xlsm` files and business-maintained columns, and does not silently add unknown computers. Microsoft Excel is not required. The workbook must be writable and should not be open by another user during an update.
 
 The inventory workbook path and protected-computer list are local preferences stored in `%LOCALAPPDATA%\CoreOps\settings.json`; they are not transmitted to the project maintainers.
 
@@ -84,4 +84,4 @@ CoreOps source code and original project artwork are released under the [MIT Lic
 
 ## Next operations
 
-The service boundary in `Services/RemoteManagementService.cs` is ready for Windows Update, Group Policy refresh, service control, VNC configuration, and cleanup operations from the original script.
+The service boundary in `Services/RemoteManagementService.cs` is ready for Windows Update, service control, VNC configuration, and temporary-file cleanup operations from the original script. Group Policy refresh is available from the main window.

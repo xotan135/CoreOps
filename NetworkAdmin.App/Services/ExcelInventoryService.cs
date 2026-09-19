@@ -47,8 +47,10 @@ public sealed class ExcelInventoryService
             throw new ArgumentException("Select an inventory workbook before collecting inventory.", nameof(workbookPath));
         if (!File.Exists(workbookPath))
             throw new FileNotFoundException("The inventory workbook was not found. Verify the path and your access to it.", workbookPath);
-        if (!string.Equals(Path.GetExtension(workbookPath), ".xlsm", StringComparison.OrdinalIgnoreCase))
-            throw new InvalidDataException("Select a macro-enabled Excel workbook (.xlsm).");
+        var extension = Path.GetExtension(workbookPath);
+        if (!extension.Equals(".xlsm", StringComparison.OrdinalIgnoreCase) &&
+            !extension.Equals(".xlsx", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException("Select an Excel workbook (.xlsx or .xlsm).");
 
         var directory = Path.GetDirectoryName(Path.GetFullPath(workbookPath))!;
         var temporaryPath = Path.Combine(directory, $".{Path.GetFileName(workbookPath)}.{Guid.NewGuid():N}.tmp");
@@ -60,8 +62,11 @@ public sealed class ExcelInventoryService
             WorkbookUpdateResult result;
             using (var document = SpreadsheetDocument.Open(temporaryPath, true))
             {
-                if (document.DocumentType != SpreadsheetDocumentType.MacroEnabledWorkbook)
-                    throw new InvalidDataException("The selected file is not a valid macro-enabled workbook.");
+                var expectedType = extension.Equals(".xlsm", StringComparison.OrdinalIgnoreCase)
+                    ? SpreadsheetDocumentType.MacroEnabledWorkbook
+                    : SpreadsheetDocumentType.Workbook;
+                if (document.DocumentType != expectedType)
+                    throw new InvalidDataException($"The selected file is not a valid {extension} workbook.");
                 var workbookPart = document.WorkbookPart
                     ?? throw new InvalidDataException("The workbook does not contain a workbook definition.");
                 var locations = FindInventorySheets(workbookPart);

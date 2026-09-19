@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.13.1 — 2026-09-18
+
+### Added
+
+- Inventory updates now support standard `.xlsx` workbooks in addition to macro-enabled `.xlsm` workbooks
+
+## 0.13.0 — 2026-09-18
+
+### Added
+
+- Remote Group Policy refresh with parallel execution, cancellation, auditing, and session reporting
+- Resizable Protected Computers editor with remembered window placement
+
+### Changed
+
+- Moved protected-computer management out of the main workspace into a dedicated window
+
+
 CoreOps uses semantic versioning while it is under active development.
 
 ## 0.12.1 — 2026-09-18
@@ -196,8 +214,6 @@ First tracked pre-release.
 ### Still planned before 1.0
 
 - Windows Update operations
-- Group Policy refresh
-- WPKG service control
 - VNC configuration deployment
-- Temporary-file and RMS log cleanup
-- Settings persistence and broader operational testing
+- Temporary-file cleanup
+- Settings interface and release hardening

@@ -21,6 +21,7 @@ public partial class MainWindow : Window
     private SessionReportWindow? _reportWindow;
     private LapsWindow? _lapsWindow;
     private DcuWindow? _dcuWindow;
+    private List<string> _protectedComputers = [];
     private string _reportOperation = "Current session";
 
     public MainWindow()
@@ -31,14 +32,9 @@ public partial class MainWindow : Window
         AppVersionTextBlock.Text = version is null ? "development" : $"v{version.Major}.{version.Minor}.{version.Build}";
         var settings = _settings.Load();
         InventoryPathTextBox.Text = settings.InventoryWorkbookPath;
-        ProtectedNamesTextBox.Text = string.Join(Environment.NewLine, settings.ProtectedComputers);
+        _protectedComputers = settings.ProtectedComputers;
         if (settings.MainInputHeight > 0)
             InputSectionRow.Height = new GridLength(Math.Clamp(settings.MainInputHeight, 185, 430));
-        if (settings.TargetPaneRatio is > 0.2 and < 0.8)
-        {
-            TargetPaneColumn.Width = new GridLength(settings.TargetPaneRatio, GridUnitType.Star);
-            ProtectedPaneColumn.Width = new GridLength(1 - settings.TargetPaneRatio, GridUnitType.Star);
-        }
         Closing += (_, _) => SaveSettings();
         AppendLog("Application ready. Commands run as the current Windows user.");
     }
@@ -97,7 +93,7 @@ public partial class MainWindow : Window
         var dialog = new OpenFileDialog
         {
             Title = "Select inventory workbook",
-            Filter = "Macro-enabled Excel workbook (*.xlsm)|*.xlsm",
+            Filter = "Excel workbooks (*.xlsx;*.xlsm)|*.xlsx;*.xlsm|Excel workbook (*.xlsx)|*.xlsx|Macro-enabled workbook (*.xlsm)|*.xlsm",
             CheckFileExists = true,
             Multiselect = false
         };
@@ -152,13 +148,26 @@ public partial class MainWindow : Window
         }
     }
 
+    private void OpenProtectedComputersButton_Click(object sender, RoutedEventArgs e)
+    {
+        var editor = new ProtectedComputersWindow(_protectedComputers) { Owner = this };
+        if (editor.ShowDialog() != true) return;
+        _protectedComputers = ParseNames(editor.ComputerNames)
+            .OrderBy(name => name, StringComparer.OrdinalIgnoreCase).ToList();
+        SaveSettings();
+        AppendLog($"Protected-computer list updated: {_protectedComputers.Count} computer(s). ");
+    }
+
+    private async void GpUpdateButton_Click(object sender, RoutedEventArgs e) =>
+        await RunAsync("Group Policy refresh", _remote.GpUpdateAsync);
+
     private async void RestartButton_Click(object sender, RoutedEventArgs e)
     {
         SaveSettings();
         var targets = ParseNames(ComputerNamesTextBox.Text);
         if (targets.Count == 0) { ShowTargetError(); return; }
 
-        var protectedNames = ParseNames(ProtectedNamesTextBox.Text).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var protectedNames = _protectedComputers.ToHashSet(StringComparer.OrdinalIgnoreCase);
         var allowed = targets.Where(name => !protectedNames.Contains(name)).ToList();
         var blocked = targets.Where(protectedNames.Contains).ToList();
         if (blocked.Count > 0)
@@ -244,7 +253,7 @@ public partial class MainWindow : Window
 
     private void SetBusy(bool busy, string status)
     {
-        CheckButton.IsEnabled = InventoryButton.IsEnabled = RestartButton.IsEnabled = !busy;
+        CheckButton.IsEnabled = InventoryButton.IsEnabled = RestartButton.IsEnabled = GpUpdateButton.IsEnabled = !busy;
         CancelButton.IsEnabled = busy;
         ProgressBar.Visibility = busy ? Visibility.Visible : Visibility.Collapsed;
         StatusTextBlock.Text = status;
@@ -262,9 +271,7 @@ public partial class MainWindow : Window
     private void SaveSettings() => _settings.Save(new AppSettings
     {
         InventoryWorkbookPath = InventoryPathTextBox.Text.Trim(),
-        ProtectedComputers = ParseNames(ProtectedNamesTextBox.Text),
+        ProtectedComputers = _protectedComputers,
         MainInputHeight = InputSectionRow.ActualHeight,
-        TargetPaneRatio = TargetPaneColumn.ActualWidth + ProtectedPaneColumn.ActualWidth <= 0 ? 2d / 3d :
-            TargetPaneColumn.ActualWidth / (TargetPaneColumn.ActualWidth + ProtectedPaneColumn.ActualWidth)
     });
 }
